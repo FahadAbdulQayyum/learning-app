@@ -71,6 +71,26 @@ body {
   padding: clamp(2.5rem, 8vw, 4.5rem) 1.5rem 1.25rem;
 }
 
+.thanks {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+  animation: rise 0.55s ease both;
+}
+
+.thanks a {
+  color: var(--leaf-deep);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 0.2s ease;
+}
+
+.thanks a:hover {
+  color: var(--leaf);
+}
+
 .brand {
   margin: 0;
   font-family: var(--font-display);
@@ -608,27 +628,10 @@ main {
   font-size: 0.9rem;
 }
 
-.site-footer > p:first-child {
+.site-footer p {
   margin: 0;
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
-}
-
-.site-footer .thanks {
-  margin: 0.65rem 0 0;
-}
-
-.site-footer a {
-  color: var(--leaf-deep);
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
-  transition: color 0.2s ease;
-}
-
-.site-footer a:hover {
-  color: var(--leaf);
 }
 
 @keyframes rise {
