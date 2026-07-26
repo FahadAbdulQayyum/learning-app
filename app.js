@@ -403,4 +403,77 @@
       });
     });
   }
+
+  initInstallBanner();
 })();
+
+function initInstallBanner() {
+  const bannerEl = document.getElementById("install-banner");
+  const installBtn = document.getElementById("install-app-btn");
+  const dismissBtn = document.getElementById("install-dismiss");
+  if (!bannerEl || !installBtn || !dismissBtn) return;
+
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    /** @type {Navigator & { standalone?: boolean }} */ (window.navigator).standalone === true;
+
+  // Already installed as an app — no prompt needed
+  if (isStandalone) {
+    bannerEl.hidden = true;
+    document.body.classList.remove("has-install-banner");
+    return;
+  }
+
+  /** @type {BeforeInstallPromptEvent | null} */
+  let deferredPrompt = null;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  function showBanner() {
+    bannerEl.hidden = false;
+    document.body.classList.add("has-install-banner");
+  }
+
+  function hideBanner() {
+    bannerEl.hidden = true;
+    document.body.classList.remove("has-install-banner");
+  }
+
+  // Always show on landing (until closed or installed)
+  showBanner();
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPrompt = /** @type {BeforeInstallPromptEvent} */ (event);
+    showBanner();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredPrompt = null;
+    hideBanner();
+  });
+
+  dismissBtn.addEventListener("click", () => {
+    hideBanner();
+  });
+
+  installBtn.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      hideBanner();
+      return;
+    }
+
+    if (isIos) {
+      alert('To install: tap Share, then "Add to Home Screen".');
+      return;
+    }
+
+    alert("Install is not available in this browser yet. Open Laut in Chrome or Edge, then try again.");
+  });
+}
+
+/**
+ * @typedef {Event & { prompt: () => Promise<void>, userChoice: Promise<{ outcome: string }> }} BeforeInstallPromptEvent
+ */

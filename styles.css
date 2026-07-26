@@ -33,6 +33,125 @@ body {
   line-height: 1.45;
 }
 
+body.has-install-banner {
+  padding-top: 4.25rem;
+}
+
+.install-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem 0.7rem 1rem;
+  background: var(--leaf-deep);
+  color: #f3f8f7;
+  box-shadow: 0 8px 24px rgba(17, 74, 82, 0.22);
+  animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.install-banner[hidden] {
+  display: none;
+}
+
+.install-banner-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.install-banner-copy strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.install-banner-copy span {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.install-app-btn {
+  flex-shrink: 0;
+  padding: 0.55rem 0.95rem;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--leaf-deep);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.install-app-btn:hover {
+  opacity: 0.92;
+}
+
+.install-app-btn:active {
+  transform: scale(0.97);
+}
+
+.install-dismiss {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.install-dismiss:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 560px) {
+  body.has-install-banner {
+    padding-top: 5.25rem;
+  }
+
+  .install-banner {
+    flex-wrap: wrap;
+    padding-right: 2.6rem;
+  }
+
+  .install-banner-copy {
+    flex-basis: calc(100% - 2.5rem);
+  }
+
+  .install-banner-copy span {
+    white-space: normal;
+  }
+
+  .install-dismiss {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+  }
+
+  .install-app-btn {
+    width: 100%;
+  }
+}
+
 .atmosphere {
   position: fixed;
   inset: 0;
