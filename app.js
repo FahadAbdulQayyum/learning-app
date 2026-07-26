@@ -1,6 +1,8 @@
 (() => {
   const BATCH_SIZE = 8;
   const NAME_KEY = "laut-learner-name";
+  const FAV_KEY = "laut-favourite-ids";
+
   const listEl = document.getElementById("sentence-list");
   const emptyEl = document.getElementById("empty-state");
   const searchEl = document.getElementById("search");
@@ -10,6 +12,8 @@
   const nameGateEl = document.getElementById("name-gate");
   const nameFormEl = document.getElementById("name-form");
   const nameInputEl = document.getElementById("learner-name");
+  const favouritesToggleEl = document.getElementById("favourites-toggle");
+  const favouritesCountEl = document.getElementById("favourites-count");
 
   /** @type {SpeechSynthesisVoice | null} */
   let germanVoice = null;
@@ -21,13 +25,53 @@
   let filterQuery = "";
   let loading = false;
   let renderedCount = 0;
-  let endless = true;
+  let showingFavourites = false;
+  /** @type {Set<string>} */
+  let favouriteIds = loadFavourites();
 
   const playIcon = `
     <svg viewBox="0 0 16 16" aria-hidden="true">
       <path d="M3.5 2.5v11l10-5.5-10-5.5z"/>
     </svg>
   `;
+
+  const starIcon = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 17.3 6.2 20.5l1.1-6.5L2.5 9.5l6.6-1L12 2.5l2.9 6 6.6 1-4.8 4.5 1.1 6.5L12 17.3z"/>
+    </svg>
+  `;
+
+  function loadFavourites() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(FAV_KEY) || "[]");
+      if (!Array.isArray(raw)) return new Set();
+      return new Set(raw.filter((id) => typeof id === "string"));
+    } catch {
+      return new Set();
+    }
+  }
+
+  function saveFavourites() {
+    localStorage.setItem(FAV_KEY, JSON.stringify([...favouriteIds]));
+  }
+
+  function updateFavouritesCount() {
+    favouritesCountEl.textContent = String(favouriteIds.size);
+  }
+
+  function isFavourite(id) {
+    return favouriteIds.has(id);
+  }
+
+  function toggleFavourite(id) {
+    if (favouriteIds.has(id)) {
+      favouriteIds.delete(id);
+    } else {
+      favouriteIds.add(id);
+    }
+    saveFavourites();
+    updateFavouritesCount();
+  }
 
   function showWelcome(name) {
     welcomeEl.textContent = `Welcome ${name}`;
@@ -70,6 +114,7 @@
   }
 
   initNameGate();
+  updateFavouritesCount();
 
   function pickGermanVoice() {
     const voices = speechSynthesis.getVoices();
@@ -152,7 +197,10 @@
   }
 
   function filteredPool() {
-    return SENTENCES.filter((s) => matchesFilter(s, filterQuery));
+    const base = showingFavourites
+      ? SENTENCES.filter((s) => favouriteIds.has(s.id))
+      : SENTENCES;
+    return base.filter((s) => matchesFilter(s, filterQuery));
   }
 
   function refillQueue() {
@@ -161,7 +209,19 @@
       queue = [];
       return;
     }
-    queue = endless && !filterQuery ? shuffle(pool) : pool.slice();
+    const endless = !showingFavourites && !filterQuery;
+    queue = endless ? shuffle(pool) : pool.slice();
+  }
+
+  /**
+   * @param {HTMLButtonElement} favBtn
+   * @param {string} id
+   */
+  function syncFavouriteButton(favBtn, id) {
+    const active = isFavourite(id);
+    favBtn.classList.toggle("is-active", active);
+    favBtn.setAttribute("aria-pressed", active ? "true" : "false");
+    favBtn.setAttribute("aria-label", active ? "Remove from favourites" : "Save to favourites");
   }
 
   /**
@@ -171,6 +231,7 @@
   function renderSentence(sentence, index) {
     const article = document.createElement("article");
     article.className = "sentence";
+    article.dataset.id = sentence.id;
     article.role = "listitem";
     article.style.animationDelay = `${Math.min((index % BATCH_SIZE) * 0.04, 0.32)}s`;
 
@@ -181,6 +242,34 @@
     meaning.className = "full-meaning";
     meaning.textContent = sentence.meaning;
 
+    const actions = document.createElement("div");
+    actions.className = "sentence-actions";
+
+    const favBtn = document.createElement("button");
+    favBtn.type = "button";
+    favBtn.className = "favourite-btn";
+    favBtn.innerHTML = starIcon;
+    syncFavouriteButton(favBtn, sentence.id);
+    favBtn.addEventListener("click", () => {
+      toggleFavourite(sentence.id);
+      syncFavouriteButton(favBtn, sentence.id);
+
+      // Keep other visible copies of the same sentence in sync
+      listEl.querySelectorAll(`.sentence[data-id="${sentence.id}"] .favourite-btn`).forEach((btn) => {
+        if (btn !== favBtn) syncFavouriteButton(/** @type {HTMLButtonElement} */ (btn), sentence.id);
+      });
+
+      if (showingFavourites && !isFavourite(sentence.id)) {
+        article.remove();
+        renderedCount = Math.max(0, renderedCount - 1);
+        emptyEl.hidden = renderedCount > 0;
+        if (renderedCount === 0) {
+          emptyEl.textContent = "No favourite sentences yet. Star some while browsing.";
+          emptyEl.hidden = false;
+        }
+      }
+    });
+
     const playBtn = document.createElement("button");
     playBtn.type = "button";
     playBtn.className = "play-sentence";
@@ -188,7 +277,8 @@
     playBtn.innerHTML = `${playIcon}<span>Play sentence</span>`;
     playBtn.addEventListener("click", () => speak(sentence.text, null, playBtn));
 
-    top.append(meaning, playBtn);
+    actions.append(favBtn, playBtn);
+    top.append(meaning, actions);
 
     const words = document.createElement("div");
     words.className = "words";
@@ -221,11 +311,22 @@
     if (loadingEl) loadingEl.hidden = !isLoading;
   }
 
+  function emptyMessage() {
+    if (showingFavourites && favouriteIds.size === 0) {
+      return "No favourite sentences yet. Star some while browsing.";
+    }
+    if (showingFavourites) {
+      return "No favourites match that filter.";
+    }
+    return "No sentences match that filter.";
+  }
+
   function loadMore() {
     if (loading) return;
 
     if (!queue.length) {
-      if (endless && !filterQuery && filteredPool().length) {
+      const canLoop = !showingFavourites && !filterQuery && filteredPool().length;
+      if (canLoop) {
         refillQueue();
       } else {
         setLoading(false);
@@ -244,7 +345,6 @@
     emptyEl.hidden = renderedCount > 0;
     setLoading(false);
 
-    // Keep filling if the page is still short (tall screens / zoomed out)
     requestAnimationFrame(() => {
       if (sentinelEl.getBoundingClientRect().top < window.innerHeight + 120) {
         loadMore();
@@ -256,8 +356,22 @@
     listEl.replaceChildren();
     renderedCount = 0;
     refillQueue();
+    emptyEl.textContent = emptyMessage();
     emptyEl.hidden = true;
     loadMore();
+    if (renderedCount === 0) {
+      emptyEl.hidden = false;
+    }
+  }
+
+  function setFavouritesMode(on) {
+    showingFavourites = on;
+    favouritesToggleEl.setAttribute("aria-pressed", on ? "true" : "false");
+    favouritesToggleEl.setAttribute(
+      "aria-label",
+      on ? "Show all sentences" : "Show favourite sentences"
+    );
+    resetFeed();
   }
 
   const observer = new IntersectionObserver(
@@ -273,8 +387,11 @@
 
   searchEl.addEventListener("input", () => {
     filterQuery = searchEl.value.trim().toLowerCase();
-    endless = !filterQuery;
     resetFeed();
+  });
+
+  favouritesToggleEl.addEventListener("click", () => {
+    setFavouritesMode(!showingFavourites);
   });
 
   resetFeed();

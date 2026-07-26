@@ -71,15 +71,32 @@
     </div>
 
     <main>
-      <label class="search-wrap" for="search">
-        <span class="visually-hidden">Filter sentences</span>
-        <input
-          id="search"
-          type="search"
-          placeholder="Filter by German or English…"
-          autocomplete="off"
-        />
-      </label>
+      <div class="toolbar">
+        <label class="search-wrap" for="search">
+          <span class="visually-hidden">Filter sentences</span>
+          <input
+            id="search"
+            type="search"
+            placeholder="Filter by German or English…"
+            autocomplete="off"
+          />
+        </label>
+        <button
+          type="button"
+          id="favourites-toggle"
+          class="favourites-toggle"
+          aria-pressed="false"
+          aria-label="Show favourite sentences"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 17.3 6.2 20.5l1.1-6.5L2.5 9.5l6.6-1L12 2.5l2.9 6 6.6 1-4.8 4.5 1.1 6.5L12 17.3z"
+            />
+          </svg>
+          <span>Favourites</span>
+          <span id="favourites-count" class="favourites-count">0</span>
+        </button>
+      </div>
 
       <div id="sentence-list" class="sentence-list" role="list"></div>
       <p id="empty-state" class="empty-state" hidden>No sentences match that filter.</p>
