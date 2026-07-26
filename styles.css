@@ -608,10 +608,27 @@ main {
   font-size: 0.9rem;
 }
 
-.site-footer p {
+.site-footer > p:first-child {
   margin: 0;
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
+}
+
+.site-footer .thanks {
+  margin: 0.65rem 0 0;
+}
+
+.site-footer a {
+  color: var(--leaf-deep);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 0.2s ease;
+}
+
+.site-footer a:hover {
+  color: var(--leaf);
 }
 
 @keyframes rise {
