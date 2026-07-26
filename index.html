@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laut — German sentences, word by word</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <p class="brand">Laut</p>
+      <p class="tagline">Hear German sentence by sentence. Tap a word to speak it.</p>
+    </header>
+
+    <main>
+      <label class="search-wrap" for="search">
+        <span class="visually-hidden">Filter sentences</span>
+        <input
+          id="search"
+          type="search"
+          placeholder="Filter by German or English…"
+          autocomplete="off"
+        />
+      </label>
+
+      <div id="sentence-list" class="sentence-list" role="list"></div>
+      <p id="empty-state" class="empty-state" hidden>No sentences match that filter.</p>
+      <div id="scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
+      <p id="loading-more" class="loading-more" hidden>Loading more sentences…</p>
+    </main>
+
+    <footer class="site-footer">
+      <p>Pronunciation uses your browser’s German voice. Tap any word or use Play sentence.</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
