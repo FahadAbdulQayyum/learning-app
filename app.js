@@ -1,10 +1,15 @@
 (() => {
   const BATCH_SIZE = 8;
+  const NAME_KEY = "laut-learner-name";
   const listEl = document.getElementById("sentence-list");
   const emptyEl = document.getElementById("empty-state");
   const searchEl = document.getElementById("search");
   const sentinelEl = document.getElementById("scroll-sentinel");
   const loadingEl = document.getElementById("loading-more");
+  const welcomeEl = document.getElementById("welcome");
+  const nameGateEl = document.getElementById("name-gate");
+  const nameFormEl = document.getElementById("name-form");
+  const nameInputEl = document.getElementById("learner-name");
 
   /** @type {SpeechSynthesisVoice | null} */
   let germanVoice = null;
@@ -23,6 +28,48 @@
       <path d="M3.5 2.5v11l10-5.5-10-5.5z"/>
     </svg>
   `;
+
+  function showWelcome(name) {
+    welcomeEl.textContent = `Welcome ${name}`;
+    welcomeEl.hidden = false;
+  }
+
+  function closeNameGate() {
+    nameGateEl.hidden = true;
+    document.body.classList.remove("is-gated");
+  }
+
+  function openNameGate() {
+    nameGateEl.hidden = false;
+    document.body.classList.add("is-gated");
+    requestAnimationFrame(() => nameInputEl.focus());
+  }
+
+  function initNameGate() {
+    const saved = (localStorage.getItem(NAME_KEY) || "").trim();
+    if (saved) {
+      showWelcome(saved);
+      closeNameGate();
+      return;
+    }
+
+    openNameGate();
+
+    nameFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = nameInputEl.value.trim();
+      if (!name) {
+        nameInputEl.focus();
+        return;
+      }
+
+      localStorage.setItem(NAME_KEY, name);
+      showWelcome(name);
+      closeNameGate();
+    });
+  }
+
+  initNameGate();
 
   function pickGermanVoice() {
     const voices = speechSynthesis.getVoices();

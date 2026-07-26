@@ -82,11 +82,125 @@ body {
   color: var(--leaf-deep);
 }
 
+.welcome {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 4vw, 1.85rem);
+  font-weight: 500;
+  color: var(--leaf);
+  letter-spacing: -0.02em;
+  animation: rise 0.55s ease both;
+}
+
 .tagline {
   margin: 0.85rem 0 0;
   max-width: 28rem;
   font-size: 1.125rem;
   color: var(--ink-soft);
+}
+
+.name-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(31, 111, 122, 0.28), transparent 55%),
+    rgba(237, 243, 246, 0.92);
+  backdrop-filter: blur(10px);
+  animation: fade-in 0.35s ease both;
+}
+
+.name-gate[hidden] {
+  display: none;
+}
+
+.name-panel {
+  width: min(100%, 26rem);
+  text-align: center;
+  animation: rise 0.55s ease 0.05s both;
+}
+
+.name-brand {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 10vw, 3.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--leaf-deep);
+}
+
+.name-title {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 4.5vw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.name-hint {
+  margin: 0.45rem 0 1.35rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.name-panel input {
+  width: 100%;
+  padding: 0.95rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 1.05rem;
+  text-align: center;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.name-panel input:focus {
+  border-color: var(--leaf);
+  box-shadow: 0 0 0 4px var(--glow);
+}
+
+.name-panel button {
+  margin-top: 0.9rem;
+  width: 100%;
+  padding: 0.9rem 1.15rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--leaf);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.name-panel button:hover {
+  background: var(--leaf-deep);
+}
+
+.name-panel button:active {
+  transform: scale(0.98);
+}
+
+body.is-gated {
+  overflow: hidden;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 main {
