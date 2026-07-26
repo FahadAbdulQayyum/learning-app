@@ -34,22 +34,23 @@ body {
 }
 
 body.has-install-banner {
-  padding-top: 4.25rem;
+  padding-bottom: 4.5rem;
 }
 
 .install-banner {
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.85rem 0.7rem 1rem;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
   background: var(--leaf-deep);
   color: #f3f8f7;
-  box-shadow: 0 8px 24px rgba(17, 74, 82, 0.22);
+  box-shadow: 0 -8px 24px rgba(17, 74, 82, 0.2);
   animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -57,36 +58,15 @@ body.has-install-banner {
   display: none;
 }
 
-.install-banner-copy {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.install-banner-copy strong {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.install-banner-copy span {
-  font-size: 0.8rem;
-  opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .install-app-btn {
   flex-shrink: 0;
-  padding: 0.55rem 0.95rem;
+  padding: 0.55rem 1.15rem;
   border: none;
   border-radius: 999px;
   background: #fff;
   color: var(--leaf-deep);
   font: inherit;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.2s ease;
@@ -125,30 +105,7 @@ body.has-install-banner {
 
 @media (max-width: 560px) {
   body.has-install-banner {
-    padding-top: 5.25rem;
-  }
-
-  .install-banner {
-    flex-wrap: wrap;
-    padding-right: 2.6rem;
-  }
-
-  .install-banner-copy {
-    flex-basis: calc(100% - 2.5rem);
-  }
-
-  .install-banner-copy span {
-    white-space: normal;
-  }
-
-  .install-dismiss {
-    position: absolute;
-    top: 0.45rem;
-    right: 0.45rem;
-  }
-
-  .install-app-btn {
-    width: 100%;
+    padding-bottom: 4.75rem;
   }
 }
 
