@@ -71,6 +71,10 @@
       <p class="slogan">Learn Smartly!</p>
       <p id="welcome" class="welcome" hidden></p>
       <p class="tagline">Hear German sentence by sentence. Tap a word to speak it.</p>
+      <nav class="site-nav" aria-label="Main">
+        <button type="button" class="nav-btn is-active" data-view="practice" aria-pressed="true">Practice</button>
+        <button type="button" class="nav-btn" data-view="stories" aria-pressed="false">Stories</button>
+      </nav>
     </header>
 
     <div id="name-gate" class="name-gate" hidden>
@@ -96,44 +100,52 @@
     </div>
 
     <main>
-      <div class="toolbar">
-        <label class="search-wrap" for="search">
-          <span class="visually-hidden">Filter sentences</span>
-          <input
-            id="search"
-            type="search"
-            placeholder="Filter by German or English…"
-            autocomplete="off"
-          />
-        </label>
-        <button
-          type="button"
-          id="favourites-toggle"
-          class="favourites-toggle"
-          aria-pressed="false"
-          aria-label="Show favourite sentences"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M12 17.3 6.2 20.5l1.1-6.5L2.5 9.5l6.6-1L12 2.5l2.9 6 6.6 1-4.8 4.5 1.1 6.5L12 17.3z"
+      <section id="view-practice" class="view is-active" aria-label="Practice sentences">
+        <div class="toolbar">
+          <label class="search-wrap" for="search">
+            <span class="visually-hidden">Filter sentences</span>
+            <input
+              id="search"
+              type="search"
+              placeholder="Filter by German or English…"
+              autocomplete="off"
             />
-          </svg>
-          <span>Favourites</span>
-          <span id="favourites-count" class="favourites-count">0</span>
-        </button>
-      </div>
+          </label>
+          <button
+            type="button"
+            id="favourites-toggle"
+            class="favourites-toggle"
+            aria-pressed="false"
+            aria-label="Show favourite sentences"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 17.3 6.2 20.5l1.1-6.5L2.5 9.5l6.6-1L12 2.5l2.9 6 6.6 1-4.8 4.5 1.1 6.5L12 17.3z"
+              />
+            </svg>
+            <span>Favourites</span>
+            <span id="favourites-count" class="favourites-count">0</span>
+          </button>
+        </div>
 
-      <div id="sentence-list" class="sentence-list" role="list"></div>
-      <p id="empty-state" class="empty-state" hidden>No sentences match that filter.</p>
-      <div id="scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
-      <p id="loading-more" class="loading-more" hidden>Loading more sentences…</p>
+        <div id="sentence-list" class="sentence-list" role="list"></div>
+        <p id="empty-state" class="empty-state" hidden>No sentences match that filter.</p>
+        <div id="scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
+        <p id="loading-more" class="loading-more" hidden>Loading more sentences…</p>
+      </section>
+
+      <section id="view-stories" class="view" aria-label="Stories blog" hidden>
+        <div id="stories-list" class="stories-list"></div>
+        <article id="story-reader" class="story-reader" hidden></article>
+      </section>
     </main>
 
     <footer class="site-footer">
-      <p>Pronunciation uses your browser’s German voice. Tap any word or use Play sentence.</p>
+      <p>Pronunciation uses your browser’s German voice. Tap any word, play a sentence, or open Stories for longer reads.</p>
     </footer>
 
     <script src="data.js"></script>
+    <script src="stories.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

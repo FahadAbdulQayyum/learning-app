@@ -141,7 +141,8 @@
     }
     document.querySelectorAll(".play-sentence.is-speaking").forEach((btn) => {
       btn.classList.remove("is-speaking");
-      btn.innerHTML = `${playIcon}<span>Play sentence</span>`;
+      const label = btn.dataset.label || "Play sentence";
+      btn.innerHTML = `${playIcon}<span>${label}</span>`;
     });
   }
 
@@ -170,6 +171,9 @@
     }
 
     if (playBtn) {
+      if (!playBtn.dataset.label) {
+        playBtn.dataset.label = playBtn.querySelector("span")?.textContent?.trim() || "Play sentence";
+      }
       playBtn.classList.add("is-speaking");
       playBtn.innerHTML = `${playIcon}<span>Speaking…</span>`;
     }
@@ -395,6 +399,8 @@
   });
 
   resetFeed();
+  initStories();
+  initViewNav();
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -405,6 +411,163 @@
   }
 
   initInstallBanner();
+
+  function initViewNav() {
+    const practiceView = document.getElementById("view-practice");
+    const storiesView = document.getElementById("view-stories");
+    const navButtons = document.querySelectorAll(".nav-btn");
+
+    navButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const view = btn.getAttribute("data-view");
+        const showStories = view === "stories";
+
+        navButtons.forEach((other) => {
+          const active = other === btn;
+          other.classList.toggle("is-active", active);
+          other.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+
+        practiceView.hidden = showStories;
+        storiesView.hidden = !showStories;
+        practiceView.classList.toggle("is-active", !showStories);
+        storiesView.classList.toggle("is-active", showStories);
+
+        if (showStories) {
+          showStoriesList();
+        }
+      });
+    });
+  }
+
+  function initStories() {
+    const listElStories = document.getElementById("stories-list");
+    if (!listElStories || typeof STORIES === "undefined") return;
+    renderStoriesList();
+  }
+
+  function showStoriesList() {
+    const listElStories = document.getElementById("stories-list");
+    const readerEl = document.getElementById("story-reader");
+    listElStories.hidden = false;
+    readerEl.hidden = true;
+    readerEl.replaceChildren();
+  }
+
+  function renderStoriesList() {
+    const listElStories = document.getElementById("stories-list");
+    listElStories.replaceChildren();
+
+    const intro = document.createElement("div");
+    intro.className = "stories-intro";
+    intro.innerHTML = `
+      <h2>Stories</h2>
+      <p>Long reads with every word glossed in English. Tap a word to hear it, or play a whole paragraph.</p>
+    `;
+    listElStories.append(intro);
+
+    STORIES.forEach((story, index) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "story-card";
+      card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
+      card.innerHTML = `
+        <span class="story-card-meta">${story.readingMinutes} min read</span>
+        <span class="story-card-title">${story.title}</span>
+        <span class="story-card-title-en">${story.titleEn}</span>
+        <span class="story-card-excerpt">${story.excerpt}</span>
+      `;
+      card.addEventListener("click", () => openStory(story.id));
+      listElStories.append(card);
+    });
+  }
+
+  /** @param {string} storyId */
+  function openStory(storyId) {
+    const story = STORIES.find((s) => s.id === storyId);
+    if (!story) return;
+
+    const listElStories = document.getElementById("stories-list");
+    const readerEl = document.getElementById("story-reader");
+    listElStories.hidden = true;
+    readerEl.hidden = false;
+    readerEl.replaceChildren();
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "story-back";
+    backBtn.textContent = "← All stories";
+    backBtn.addEventListener("click", showStoriesList);
+
+    const header = document.createElement("header");
+    header.className = "story-header";
+    header.innerHTML = `
+      <p class="story-meta">${story.readingMinutes} min read</p>
+      <h2 class="story-title">${story.title}</h2>
+      <p class="story-title-en">${story.titleEn}</p>
+    `;
+
+    const playAllBtn = document.createElement("button");
+    playAllBtn.type = "button";
+    playAllBtn.className = "play-sentence story-play-all";
+    playAllBtn.innerHTML = `${playIcon}<span>Play full story</span>`;
+    playAllBtn.addEventListener("click", () => {
+      const fullText = story.paragraphs
+        .map((p) => p.words.map((w) => w.de).join(" "))
+        .join(" ");
+      speak(fullText, null, playAllBtn);
+    });
+
+    readerEl.append(backBtn, header, playAllBtn);
+
+    story.paragraphs.forEach((paragraph, pIndex) => {
+      const block = document.createElement("section");
+      block.className = "story-paragraph";
+
+      const paraTop = document.createElement("div");
+      paraTop.className = "story-paragraph-top";
+
+      const label = document.createElement("p");
+      label.className = "story-paragraph-label";
+      label.textContent = `Paragraph ${pIndex + 1}`;
+
+      const playParaBtn = document.createElement("button");
+      playParaBtn.type = "button";
+      playParaBtn.className = "play-sentence play-paragraph";
+      playParaBtn.innerHTML = `${playIcon}<span>Play paragraph</span>`;
+      const paraText = paragraph.words.map((w) => w.de).join(" ");
+      playParaBtn.addEventListener("click", () => speak(paraText, null, playParaBtn));
+
+      paraTop.append(label, playParaBtn);
+
+      const words = document.createElement("div");
+      words.className = "words story-words";
+
+      paragraph.words.forEach((word) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "word-chip";
+        chip.setAttribute("aria-label", `Pronounce ${speakable(word.de)}`);
+
+        const de = document.createElement("span");
+        de.className = "word-de";
+        de.textContent = word.de;
+
+        const en = document.createElement("span");
+        en.className = "word-en";
+        en.textContent = word.en;
+
+        chip.append(de, en);
+        chip.addEventListener("click", () => speak(word.de, chip));
+        words.append(chip);
+      });
+
+      block.append(paraTop, words);
+      readerEl.append(block);
+    });
+
+    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 })();
 
 function initInstallBanner() {

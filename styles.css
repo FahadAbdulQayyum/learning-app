@@ -265,6 +265,44 @@ body.has-install-banner {
   animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
 }
 
+.site-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.35rem;
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+.nav-btn {
+  padding: 0.55rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.nav-btn:hover {
+  border-color: var(--leaf);
+  color: var(--leaf-deep);
+}
+
+.nav-btn.is-active {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: #fff;
+}
+
+.view[hidden] {
+  display: none;
+}
+
 .name-gate {
   position: fixed;
   inset: 0;
@@ -694,6 +732,170 @@ main {
   50% {
     opacity: 1;
   }
+}
+
+.stories-intro {
+  margin-bottom: 1.5rem;
+}
+
+.stories-intro h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--leaf-deep);
+}
+
+.stories-intro p {
+  margin: 0.55rem 0 0;
+  max-width: 34rem;
+  color: var(--ink-soft);
+}
+
+.stories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.story-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 1.15rem 0 1.25rem;
+  border: none;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  animation: rise 0.5s ease both;
+  transition: opacity 0.2s ease;
+}
+
+.story-card:first-of-type {
+  border-top: none;
+  padding-top: 0.25rem;
+}
+
+.story-card:hover .story-card-title {
+  color: var(--leaf);
+}
+
+.story-card-meta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.story-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 3.5vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  transition: color 0.2s ease;
+}
+
+.story-card-title-en {
+  font-size: 0.95rem;
+  color: var(--leaf);
+  font-weight: 500;
+}
+
+.story-card-excerpt {
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.story-reader {
+  animation: rise 0.45s ease both;
+}
+
+.story-back {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--leaf);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.story-back:hover {
+  color: var(--leaf-deep);
+}
+
+.story-header {
+  margin-bottom: 1rem;
+}
+
+.story-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.story-title {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--leaf-deep);
+}
+
+.story-title-en {
+  margin: 0.45rem 0 0;
+  font-size: 1.1rem;
+  color: var(--leaf);
+}
+
+.story-play-all {
+  margin-bottom: 1.5rem;
+}
+
+.story-paragraph {
+  padding: 1.35rem 0 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.story-paragraph-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.story-paragraph-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.play-paragraph {
+  font-size: 0.85rem;
+  padding: 0.45rem 0.8rem;
+}
+
+.story-words .word-de {
+  font-size: clamp(1.05rem, 2.8vw, 1.25rem);
 }
 
 .site-footer {
