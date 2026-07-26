@@ -395,4 +395,12 @@
   });
 
   resetFeed();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {
+        /* offline install may fail on file:// — needs https or localhost */
+      });
+    });
+  }
 })();

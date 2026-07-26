@@ -4,13 +4,21 @@ A simple German sentence learner: word-by-word English glosses, tap a word to he
 
 ## Run locally
 
-Open `index.html` in a browser, or from this folder:
+Serve over HTTP (needed for the PWA service worker):
 
 ```bash
 npx --yes serve .
 ```
 
+Then open the local URL in Chrome or Edge. Use **Install app** / Add to Home Screen to install Laut as a PWA.
+
 Pronunciation uses the browser’s Web Speech API (best in Chrome or Edge with a German voice installed).
+
+## PWA
+
+- `manifest.webmanifest` — app name, theme, icons
+- `sw.js` — caches the app shell for offline use
+- `icons/` — install icons
 
 ## Add sentences
 
