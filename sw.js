@@ -1,7 +1,7 @@
 /* global QUIZ_WORDS, pickQuizWord */
 importScripts("./quiz-words.js");
 
-const CACHE_NAME = "laut-v8.0.3";
+const CACHE_NAME = "laut-v8.0.4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,11 +14,14 @@ const APP_SHELL = [
   "./stories.js",
   "./vocabulary.js",
   "./grammar.js",
+  "./personal.js",
   "./quiz-words.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
+  "./icons/favicon.png",
+  "./icons/logo-mark.png",
 ];
 
 const HOURLY_TAG = "laut-hourly-quiz";

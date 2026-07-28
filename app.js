@@ -822,6 +822,7 @@
   initStories();
   initVocabulary();
   initGrammar();
+  initPersonal();
   initViewNav();
 
   if ("serviceWorker" in navigator) {
@@ -840,6 +841,7 @@
       stories: document.getElementById("view-stories"),
       vocabulary: document.getElementById("view-vocabulary"),
       grammar: document.getElementById("view-grammar"),
+      personal: document.getElementById("view-personal"),
     };
     const navButtons = document.querySelectorAll(".nav-btn[data-view]");
 
@@ -868,8 +870,316 @@
         if (view === "stories") showStoriesList();
         if (view === "vocabulary") showVocabList();
         if (view === "grammar") showGrammarList();
+        if (view === "personal") showPersonalList();
       });
     });
+  }
+
+  function initPersonal() {
+    const listEl = document.getElementById("personal-list");
+    if (!listEl || typeof PERSONAL_SECTIONS === "undefined") return;
+    renderPersonalList();
+  }
+
+  function showPersonalList() {
+    const listEl = document.getElementById("personal-list");
+    const readerEl = document.getElementById("personal-reader");
+    if (!listEl || !readerEl) return;
+    listEl.hidden = false;
+    readerEl.hidden = true;
+    readerEl.replaceChildren();
+  }
+
+  function personalSectionSearchText(section) {
+    const parts = [section.title, section.titleEn, section.description, ...(section.tips || [])];
+    (section.pairs || []).forEach((p) => parts.push(p.de, p.en || "", p.note || ""));
+    (section.examples || []).forEach((p) => parts.push(p.de, p.en || ""));
+    (section.verbs || []).forEach((v) =>
+      parts.push(v.de, v.en, v.present, v.perfect, v.future)
+    );
+    (section.tables || []).forEach((t) => {
+      parts.push(t.caption || "", ...(t.headers || []));
+      (t.rows || []).forEach((row) => parts.push(...row));
+    });
+    return parts.join(" ").toLowerCase();
+  }
+
+  function personalSectionCount(section) {
+    return (
+      (section.pairs?.length || 0) +
+      (section.examples?.length || 0) +
+      (section.verbs?.length || 0) +
+      (section.tables?.length || 0)
+    );
+  }
+
+  function renderPersonalList() {
+    const listEl = document.getElementById("personal-list");
+    listEl.replaceChildren();
+
+    const intro = document.createElement("div");
+    intro.className = "stories-intro";
+    intro.innerHTML = `
+      <h2>Personal learning</h2>
+      <p>Your notes — phrases, verb tables, cases, prepositions, and connectors. Tap German to hear it.</p>
+    `;
+    listEl.append(intro);
+
+    const searchWrap = document.createElement("label");
+    searchWrap.className = "search-wrap vocab-search-wrap";
+    searchWrap.innerHTML = `
+      <span class="visually-hidden">Filter personal topics</span>
+      <input id="personal-search" type="search" placeholder="Filter personal notes…" autocomplete="off" />
+    `;
+    listEl.append(searchWrap);
+
+    const cardsHost = document.createElement("div");
+    cardsHost.id = "personal-cards";
+    cardsHost.className = "vocab-cards";
+    listEl.append(cardsHost);
+
+    const searchInput = searchWrap.querySelector("#personal-search");
+    const paintCards = (query = "") => {
+      const q = query.trim().toLowerCase();
+      cardsHost.replaceChildren();
+
+      const sections = PERSONAL_SECTIONS.filter((section) => {
+        if (!q) return true;
+        return personalSectionSearchText(section).includes(q);
+      });
+
+      if (!sections.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "No personal topics match that filter.";
+        cardsHost.append(empty);
+        return;
+      }
+
+      sections.forEach((section, index) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "story-card vocab-card";
+        card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
+        const count = personalSectionCount(section);
+        card.innerHTML = `
+          <span class="story-card-meta">${count || "notes"} items</span>
+          <span class="story-card-title-en">${section.titleEn}</span>
+          <span class="story-card-title vocab-card-title-de">${section.title}</span>
+          <span class="story-card-excerpt">${section.description}</span>
+        `;
+        card.addEventListener("click", () => openPersonalSection(section.id, q));
+        cardsHost.append(card);
+      });
+
+      afterPaint(() => {
+        const m = motion();
+        if (!m) return;
+        m.enterList(cardsHost, ".story-card");
+        m.refresh(cardsHost);
+      });
+    };
+
+    paintCards();
+    searchInput.addEventListener("input", () => paintCards(searchInput.value));
+  }
+
+  /**
+   * @param {string} sectionId
+   * @param {string} [filterQuery]
+   */
+  function openPersonalSection(sectionId, filterQuery = "") {
+    const section = PERSONAL_SECTIONS.find((s) => s.id === sectionId);
+    if (!section) return;
+
+    const listEl = document.getElementById("personal-list");
+    const readerEl = document.getElementById("personal-reader");
+    listEl.hidden = true;
+    readerEl.hidden = false;
+    readerEl.replaceChildren();
+
+    const q = filterQuery.trim().toLowerCase();
+    const matchText = (parts) => !q || parts.join(" ").toLowerCase().includes(q);
+
+    const pairs = (section.pairs || []).filter((p) => matchText([p.de, p.en || "", p.note || ""]));
+    const examples = (section.examples || []).filter((p) => matchText([p.de, p.en || ""]));
+    const verbs = (section.verbs || []).filter((v) =>
+      matchText([v.de, v.en, v.present, v.perfect, v.future])
+    );
+    const tables = section.tables || [];
+    const tips = section.tips || [];
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "story-back";
+    backBtn.textContent = "← All personal notes";
+    backBtn.addEventListener("click", showPersonalList);
+
+    const header = document.createElement("header");
+    header.className = "story-header vocab-header";
+    header.innerHTML = `
+      <p class="story-meta">Personal learning</p>
+      <h2 class="story-title-en vocab-title-en">${section.titleEn}</h2>
+      <button type="button" class="vocab-title-de" aria-label="Pronounce ${section.title}">${section.title}</button>
+      <p class="vocab-section-desc">${section.description}</p>
+    `;
+    const titleBtn = header.querySelector(".vocab-title-de");
+    titleBtn.addEventListener("click", () => speak(section.title, titleBtn, null, { soft: true }));
+
+    readerEl.append(backBtn, header);
+
+    tips.forEach((tip) => {
+      const tipEl = document.createElement("p");
+      tipEl.className = "grammar-tip personal-tip";
+      tipEl.innerHTML = `<strong>Tip:</strong> ${tip}`;
+      readerEl.append(tipEl);
+    });
+
+    tables.forEach((table) => {
+      readerEl.append(renderPersonalTable(table));
+    });
+
+    if (verbs.length) {
+      const list = document.createElement("div");
+      list.className = "verb-tense-list";
+      verbs.forEach((verb) => {
+        list.append(
+          renderVerbTenseCard({
+            de: verb.de,
+            en: verb.en,
+            present: verb.present,
+            past: verb.perfect,
+            future: verb.future,
+          })
+        );
+      });
+      // Relabel Past → Perfekt for personal core verbs
+      list.querySelectorAll(".verb-tense-row--past .tense-pill").forEach((pill) => {
+        pill.textContent = "Perfekt";
+      });
+      readerEl.append(list);
+    }
+
+    if (pairs.length) {
+      const grid = document.createElement("div");
+      grid.className = "personal-pair-list";
+      pairs.forEach((pair) => grid.append(renderPersonalPair(pair)));
+      readerEl.append(grid);
+    }
+
+    if (examples.length) {
+      const block = document.createElement("div");
+      block.className = "personal-example-list";
+      const heading = document.createElement("h3");
+      heading.className = "personal-subheading";
+      heading.textContent = "Examples";
+      block.append(heading);
+      examples.forEach((ex) => block.append(renderPersonalPair(ex, true)));
+      readerEl.append(block);
+    }
+
+    if (!tips.length && !tables.length && !verbs.length && !pairs.length && !examples.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-state";
+      empty.textContent = "No items in this topic match that filter.";
+      readerEl.append(empty);
+    }
+
+    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterElements([header], { y: 12 });
+      m.enterList(readerEl, ".verb-tense-card, .personal-pair, .personal-table");
+      m.refresh(readerEl);
+    });
+  }
+
+  /**
+   * @param {PersonalPair} pair
+   * @param {boolean} [exampleStyle]
+   */
+  function renderPersonalPair(pair, exampleStyle = false) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = exampleStyle ? "personal-pair personal-pair--example" : "personal-pair";
+    btn.setAttribute("aria-label", `Pronounce ${speakable(pair.de)}`);
+
+    if (pair.en) {
+      const en = document.createElement("span");
+      en.className = "personal-pair-en";
+      en.textContent = pair.en;
+      btn.append(en);
+    }
+
+    const de = document.createElement("span");
+    de.className = "personal-pair-de";
+    const gender = getArticleGender(pair);
+    if (gender) {
+      de.append(...renderGenderedWord(pair.de, gender));
+      btn.classList.add(`personal-pair--${gender}`);
+    } else {
+      de.textContent = pair.de;
+    }
+    btn.append(de);
+
+    if (pair.note) {
+      const note = document.createElement("span");
+      note.className = "personal-pair-note";
+      note.textContent = pair.note;
+      btn.append(note);
+    }
+
+    btn.addEventListener("click", () => speak(pair.de, btn, null, { soft: true }));
+    return btn;
+  }
+
+  /** @param {PersonalTable} table */
+  function renderPersonalTable(table) {
+    const wrap = document.createElement("div");
+    wrap.className = "personal-table";
+
+    if (table.caption) {
+      const caption = document.createElement("p");
+      caption.className = "personal-table-caption";
+      caption.textContent = table.caption;
+      wrap.append(caption);
+    }
+
+    const el = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    table.headers.forEach((h) => {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.textContent = h;
+      headRow.append(th);
+    });
+    thead.append(headRow);
+    el.append(thead);
+
+    const tbody = document.createElement("tbody");
+    table.rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      row.forEach((cell) => {
+        const td = document.createElement("td");
+        const speakBtn = document.createElement("button");
+        speakBtn.type = "button";
+        speakBtn.className = "personal-table-cell";
+        speakBtn.textContent = cell;
+        if (cell && cell !== "—") {
+          speakBtn.addEventListener("click", () => speak(cell, speakBtn, null, { soft: true }));
+        } else {
+          speakBtn.disabled = true;
+        }
+        td.append(speakBtn);
+        tr.append(td);
+      });
+      tbody.append(tr);
+    });
+    el.append(tbody);
+    wrap.append(el);
+    return wrap;
   }
 
   function initStories() {

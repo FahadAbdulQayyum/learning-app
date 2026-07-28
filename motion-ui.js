@@ -49,7 +49,12 @@
   }
 
   function enterBrand() {
+    const mark = document.querySelector(".site-header .brand-mark");
     const letters = document.querySelectorAll(".site-header .brand-letter");
+    if (mark && !reduced) {
+      mark.style.opacity = "0";
+      safeAnimate(mark, { opacity: 1, scale: [0.86, 1], y: [12, 0] }, springPop);
+    }
     if (!letters.length) return;
     if (reduced) return;
 
@@ -109,7 +114,7 @@
   function bindPressable(root = document) {
     if (reduced || !press) return;
     const selector =
-      ".word-chip, .vocab-chip, .nav-btn, .play-sentence, .favourite-btn, .story-card, .voice-fab, .grammar-filter, .favourites-toggle, .verb-tense-row, .verb-infinitive";
+      ".word-chip, .vocab-chip, .nav-btn, .play-sentence, .favourite-btn, .story-card, .voice-fab, .grammar-filter, .favourites-toggle, .verb-tense-row, .verb-infinitive, .personal-pair, .personal-table-cell";
     root.querySelectorAll(selector).forEach((el) => {
       if (el.dataset.motionBound) return;
       el.dataset.motionBound = "1";

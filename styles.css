@@ -482,6 +482,39 @@ html.js-motion .app-version {
   flex-wrap: wrap;
 }
 
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+}
+
+.brand-mark {
+  width: clamp(3.5rem, 12vw, 4.75rem);
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+  padding: 0.35rem;
+  border-radius: 1rem;
+  background: #000;
+  box-shadow: 0 10px 24px rgba(17, 74, 82, 0.2);
+}
+
+.name-brand-lockup {
+  margin-bottom: 0.15rem;
+}
+
+.name-brand-lockup .brand-mark {
+  width: 3.25rem;
+}
+
+.name-brand-lockup .brand {
+  font-size: clamp(2.4rem, 8vw, 3.4rem);
+}
+
 .brand-letter {
   display: inline-block;
   will-change: transform, opacity, filter;
@@ -1796,4 +1829,143 @@ html[data-theme="dark"] .tense-pill--future {
   .sentence-actions {
     align-self: flex-start;
   }
+}
+
+.personal-list,
+.personal-reader {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.personal-tip {
+  margin: 0.35rem 0 0.85rem;
+}
+
+.personal-subheading {
+  margin: 1.25rem 0 0.65rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--leaf-deep);
+}
+
+.personal-pair-list,
+.personal-example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.personal-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.personal-pair:hover,
+.personal-pair:focus-visible {
+  border-color: color-mix(in srgb, var(--leaf) 45%, var(--line));
+  transform: translateY(-1px);
+}
+
+.personal-pair--der {
+  border-left: 3px solid #2f6fed;
+}
+
+.personal-pair--die {
+  border-left: 3px solid #d63b6a;
+}
+
+.personal-pair--das {
+  border-left: 3px solid #2f9a5b;
+}
+
+.personal-pair-en {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.personal-pair-de {
+  font-weight: 650;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.personal-pair-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.personal-table {
+  margin: 0.85rem 0 1.1rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.personal-table-caption {
+  margin: 0;
+  padding: 0.7rem 0.85rem 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--leaf-deep);
+}
+
+.personal-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.personal-table th,
+.personal-table td {
+  padding: 0.35rem 0.45rem;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.personal-table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+}
+
+.personal-table-cell {
+  display: inline;
+  margin: 0;
+  padding: 0.15rem 0.2rem;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.personal-table-cell:hover:not(:disabled),
+.personal-table-cell:focus-visible:not(:disabled) {
+  background: color-mix(in srgb, var(--leaf) 12%, transparent);
+  color: var(--leaf-deep);
+}
+
+.personal-table-cell:disabled {
+  cursor: default;
+  opacity: 0.55;
 }

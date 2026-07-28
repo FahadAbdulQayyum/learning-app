@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="Laut" />
     <title>Laut — German sentences, word by word</title>
     <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <!-- Google tag (gtag.js) -->
@@ -114,9 +115,12 @@
           >Fahad Abdul Qayyum</a
         >
       </p>
-      <p class="brand" aria-label="Laut">
-        <span class="brand-letter" style="--i: 0">L</span><span class="brand-letter" style="--i: 1">a</span><span class="brand-letter" style="--i: 2">u</span><span class="brand-letter" style="--i: 3">t</span>
-      </p>
+      <div class="brand-lockup">
+        <img class="brand-mark" src="icons/logo-mark.png" width="72" height="72" alt="" />
+        <p class="brand" aria-label="Laut">
+          <span class="brand-letter" style="--i: 0">L</span><span class="brand-letter" style="--i: 1">a</span><span class="brand-letter" style="--i: 2">u</span><span class="brand-letter" style="--i: 3">t</span>
+        </p>
+      </div>
       <p class="slogan">Learn Smartly!</p>
       <p id="welcome" class="welcome" hidden></p>
       <p class="tagline">Hear German sentence by sentence. Tap a word to speak it.</p>
@@ -125,6 +129,7 @@
         <button type="button" class="nav-btn" data-view="stories" aria-pressed="false">Stories</button>
         <button type="button" class="nav-btn" data-view="vocabulary" aria-pressed="false">Vocabulary</button>
         <button type="button" class="nav-btn" data-view="grammar" aria-pressed="false">Grammar</button>
+        <button type="button" class="nav-btn" data-view="personal" aria-pressed="false">Personal</button>
         <button
           type="button"
           id="theme-toggle"
@@ -144,9 +149,12 @@
 
     <div id="name-gate" class="name-gate" hidden>
       <form id="name-form" class="name-panel" autocomplete="off">
-        <p class="name-brand brand" aria-label="Laut">
-          <span class="brand-letter" style="--i: 0">L</span><span class="brand-letter" style="--i: 1">a</span><span class="brand-letter" style="--i: 2">u</span><span class="brand-letter" style="--i: 3">t</span>
-        </p>
+        <div class="brand-lockup name-brand-lockup">
+          <img class="brand-mark" src="icons/logo-mark.png" width="56" height="56" alt="" />
+          <p class="name-brand brand" aria-label="Laut">
+            <span class="brand-letter" style="--i: 0">L</span><span class="brand-letter" style="--i: 1">a</span><span class="brand-letter" style="--i: 2">u</span><span class="brand-letter" style="--i: 3">t</span>
+          </p>
+        </div>
         <p class="slogan">Learn Smartly!</p>
         <h1 class="name-title">What should we call you?</h1>
         <p class="name-hint">Enter a good name to get started.</p>
@@ -213,13 +221,18 @@
         <div id="grammar-list" class="grammar-list"></div>
         <article id="grammar-reader" class="grammar-reader" hidden></article>
       </section>
+
+      <section id="view-personal" class="view" aria-label="Personal learning" hidden>
+        <div id="personal-list" class="personal-list"></div>
+        <article id="personal-reader" class="personal-reader" hidden></article>
+      </section>
     </main>
 
     <footer class="site-footer">
-      <p>Pronunciation uses your browser’s German voice. Tap any word across Practice, Stories, Vocabulary, or Grammar.</p>
+      <p>Pronunciation uses your browser’s German voice. Tap any word across Practice, Stories, Vocabulary, Grammar, or Personal.</p>
     </footer>
 
-    <aside id="app-version" class="app-version" aria-label="App version">v8.0.3</aside>
+    <aside id="app-version" class="app-version" aria-label="App version">v8.0.4</aside>
 
     <script src="vendor/motion.js"></script>
     <script src="motion-ui.js"></script>
@@ -228,6 +241,7 @@
     <script src="stories.js"></script>
     <script src="vocabulary.js"></script>
     <script src="grammar.js"></script>
+    <script src="personal.js"></script>
     <script src="quiz-words.js"></script>
     <script src="app.js"></script>
   </body>
