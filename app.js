@@ -329,8 +329,9 @@
    * @param {string} text
    * @param {HTMLElement | null} highlightEl
    * @param {HTMLButtonElement | null} playBtn
+   * @param {{ soft?: boolean }} [options]
    */
-  function speak(text, highlightEl = null, playBtn = null) {
+  function speak(text, highlightEl = null, playBtn = null, options = {}) {
     if (!("speechSynthesis" in window)) {
       alert("Speech is not supported in this browser. Try Chrome or Edge.");
       return;
@@ -340,15 +341,28 @@
     clearSpeakingState();
     pickGermanVoice();
 
+    const soft = Boolean(options.soft);
     const utterance = new SpeechSynthesisUtterance(speakable(text));
     utterance.lang = germanVoice?.lang || "de-DE";
-    utterance.rate = voiceGender === "male" ? 0.88 : 0.92;
 
-    // Stronger pitch shift only when the installed voice gender doesn't match
-    if (voiceGender === "male") {
-      utterance.pitch = germanVoiceGender === "male" ? 0.95 : 0.62;
+    if (soft) {
+      // Calmer delivery for vocabulary taps / titles (less punched emphasis)
+      utterance.rate = voiceGender === "male" ? 0.94 : 0.96;
+      utterance.pitch =
+        voiceGender === "male"
+          ? germanVoiceGender === "male"
+            ? 1
+            : 0.72
+          : germanVoiceGender === "female"
+            ? 1
+            : 1.12;
     } else {
-      utterance.pitch = germanVoiceGender === "female" ? 1.05 : 1.2;
+      utterance.rate = voiceGender === "male" ? 0.88 : 0.92;
+      if (voiceGender === "male") {
+        utterance.pitch = germanVoiceGender === "male" ? 0.95 : 0.62;
+      } else {
+        utterance.pitch = germanVoiceGender === "female" ? 1.05 : 1.2;
+      }
     }
 
     if (germanVoice) utterance.voice = germanVoice;
@@ -701,12 +715,12 @@
       sections.forEach((section, index) => {
         const card = document.createElement("button");
         card.type = "button";
-        card.className = "story-card";
+        card.className = "story-card vocab-card";
         card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
         card.innerHTML = `
           <span class="story-card-meta">${section.words.length} words</span>
-          <span class="story-card-title">${section.title}</span>
           <span class="story-card-title-en">${section.titleEn}</span>
+          <span class="story-card-title vocab-card-title-de">${section.title}</span>
           <span class="story-card-excerpt">${section.description}</span>
         `;
         card.addEventListener("click", () => openVocabSection(section.id, q));
@@ -744,21 +758,26 @@
     backBtn.addEventListener("click", showVocabList);
 
     const header = document.createElement("header");
-    header.className = "story-header";
+    header.className = "story-header vocab-header";
     header.innerHTML = `
       <p class="story-meta">${words.length} words</p>
-      <h2 class="story-title">${section.title}</h2>
-      <p class="story-title-en">${section.titleEn}</p>
+      <h2 class="story-title-en vocab-title-en">${section.titleEn}</h2>
+      <button type="button" class="vocab-title-de" aria-label="Pronounce ${section.title}">${section.title}</button>
       <p class="vocab-section-desc">${section.description}</p>
     `;
+
+    const titleBtn = header.querySelector(".vocab-title-de");
+    titleBtn.addEventListener("click", () => {
+      speak(section.title, titleBtn, null, { soft: true });
+    });
 
     const playAllBtn = document.createElement("button");
     playAllBtn.type = "button";
     playAllBtn.className = "play-sentence story-play-all";
     playAllBtn.innerHTML = `${playIcon}<span>Play all words</span>`;
     playAllBtn.addEventListener("click", () => {
-      const fullText = words.map((w) => w.de).join(". ");
-      speak(fullText, null, playAllBtn);
+      const fullText = words.map((w) => w.de).join(", ");
+      speak(fullText, null, playAllBtn, { soft: true });
     });
 
     const legend = document.createElement("div");
@@ -805,7 +824,7 @@
         chip.append(note);
       }
 
-      chip.addEventListener("click", () => speak(word.de, chip));
+      chip.addEventListener("click", () => speak(word.de, chip, null, { soft: true }));
       grid.append(chip);
     });
 

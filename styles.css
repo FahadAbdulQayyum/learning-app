@@ -990,6 +990,62 @@ main {
   color: var(--leaf);
 }
 
+.vocab-card:hover .vocab-card-title-de {
+  color: var(--leaf);
+}
+
+.vocab-card .story-card-title-en {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3.2vw, 1.55rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.vocab-card .vocab-card-title-de {
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.vocab-header .vocab-title-en {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 4.5vw, 2.15rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--leaf-deep);
+}
+
+.vocab-title-de {
+  display: inline-block;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: clamp(1.05rem, 2.8vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.vocab-title-de:hover,
+.vocab-title-de:focus-visible {
+  color: var(--leaf);
+  outline: none;
+}
+
+.vocab-title-de.is-speaking {
+  color: var(--leaf-deep);
+}
+
 .story-card-meta {
   font-size: 0.8rem;
   font-weight: 600;
