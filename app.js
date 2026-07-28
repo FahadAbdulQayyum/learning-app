@@ -675,6 +675,15 @@
       speak(fullText, null, playAllBtn);
     });
 
+    const legend = document.createElement("div");
+    legend.className = "gender-legend";
+    legend.setAttribute("aria-label", "Article color guide");
+    legend.innerHTML = `
+      <span class="gender-legend-item gender-der"><strong>der</strong> masculine</span>
+      <span class="gender-legend-item gender-die"><strong>die</strong> feminine</span>
+      <span class="gender-legend-item gender-das"><strong>das</strong> neuter</span>
+    `;
+
     const grid = document.createElement("div");
     grid.className = "vocab-grid";
 
@@ -687,14 +696,15 @@
     }
 
     words.forEach((word) => {
+      const gender = getArticleGender(word);
       const chip = document.createElement("button");
       chip.type = "button";
-      chip.className = "vocab-chip";
+      chip.className = gender ? `vocab-chip vocab-chip--${gender}` : "vocab-chip";
       chip.setAttribute("aria-label", `Pronounce ${speakable(word.de)}`);
 
       const de = document.createElement("span");
       de.className = "vocab-chip-de";
-      de.textContent = word.de;
+      de.append(...renderGenderedWord(word.de, gender));
 
       const en = document.createElement("span");
       en.className = "vocab-chip-en";
@@ -704,7 +714,7 @@
 
       if (word.note) {
         const note = document.createElement("span");
-        note.className = "vocab-chip-note";
+        note.className = gender ? `vocab-chip-note vocab-chip-note--${gender}` : "vocab-chip-note";
         note.textContent = word.note;
         chip.append(note);
       }
@@ -713,8 +723,40 @@
       grid.append(chip);
     });
 
-    readerEl.append(backBtn, header, playAllBtn, grid);
+    readerEl.append(backBtn, header, playAllBtn, legend, grid);
     readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /**
+   * @param {{ de: string, note?: string }} word
+   * @returns {"der" | "die" | "das" | null}
+   */
+  function getArticleGender(word) {
+    const note = (word.note || "").toLowerCase();
+    if (note.includes("masculine")) return "der";
+    if (note.includes("feminine")) return "die";
+    if (note.includes("neuter")) return "das";
+
+    const match = word.de.trim().match(/^(der|die|das)\b/i);
+    if (!match) return null;
+    return /** @type {"der" | "die" | "das"} */ (match[1].toLowerCase());
+  }
+
+  /**
+   * @param {string} text
+   * @param {"der" | "die" | "das" | null} gender
+   */
+  function renderGenderedWord(text, gender) {
+    if (!gender) return [document.createTextNode(text)];
+
+    const match = text.match(/^(der|die|das)(\s+)(.+)$/i);
+    if (!match) return [document.createTextNode(text)];
+
+    const article = document.createElement("span");
+    article.className = `vocab-article vocab-article--${gender}`;
+    article.textContent = match[1];
+
+    return [article, document.createTextNode(match[2] + match[3])];
   }
 
   function showStoriesList() {

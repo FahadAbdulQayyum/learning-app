@@ -1104,6 +1104,62 @@ main {
   margin-top: 0.5rem;
 }
 
+.gender-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.85rem;
+  margin: 0.25rem 0 1rem;
+}
+
+.gender-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.gender-legend-item strong {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+}
+
+.gender-legend-item.gender-der strong,
+.vocab-article--der,
+.vocab-chip-note--der {
+  color: #2f6fed;
+}
+
+.gender-legend-item.gender-die strong,
+.vocab-article--die,
+.vocab-chip-note--die {
+  color: #d63b6a;
+}
+
+.gender-legend-item.gender-das strong,
+.vocab-article--das,
+.vocab-chip-note--das {
+  color: #2f9a5b;
+}
+
+html[data-theme="dark"] .gender-legend-item.gender-der strong,
+html[data-theme="dark"] .vocab-article--der,
+html[data-theme="dark"] .vocab-chip-note--der {
+  color: #7aa6ff;
+}
+
+html[data-theme="dark"] .gender-legend-item.gender-die strong,
+html[data-theme="dark"] .vocab-article--die,
+html[data-theme="dark"] .vocab-chip-note--die {
+  color: #ff7aa0;
+}
+
+html[data-theme="dark"] .gender-legend-item.gender-das strong,
+html[data-theme="dark"] .vocab-article--das,
+html[data-theme="dark"] .vocab-chip-note--das {
+  color: #5fd492;
+}
+
 .vocab-chip {
   display: flex;
   flex-direction: column;
@@ -1124,10 +1180,55 @@ main {
     transform 0.15s ease;
 }
 
+.vocab-chip--der {
+  border-color: rgba(47, 111, 237, 0.35);
+  background: rgba(47, 111, 237, 0.08);
+}
+
+.vocab-chip--die {
+  border-color: rgba(214, 59, 106, 0.35);
+  background: rgba(214, 59, 106, 0.08);
+}
+
+.vocab-chip--das {
+  border-color: rgba(47, 154, 91, 0.35);
+  background: rgba(47, 154, 91, 0.08);
+}
+
+html[data-theme="dark"] .vocab-chip--der {
+  border-color: rgba(122, 166, 255, 0.4);
+  background: rgba(122, 166, 255, 0.1);
+}
+
+html[data-theme="dark"] .vocab-chip--die {
+  border-color: rgba(255, 122, 160, 0.4);
+  background: rgba(255, 122, 160, 0.1);
+}
+
+html[data-theme="dark"] .vocab-chip--das {
+  border-color: rgba(95, 212, 146, 0.4);
+  background: rgba(95, 212, 146, 0.1);
+}
+
 .vocab-chip:hover,
 .vocab-chip:focus-visible {
   border-color: var(--leaf);
   outline: none;
+}
+
+.vocab-chip--der:hover,
+.vocab-chip--der:focus-visible {
+  border-color: #2f6fed;
+}
+
+.vocab-chip--die:hover,
+.vocab-chip--die:focus-visible {
+  border-color: #d63b6a;
+}
+
+.vocab-chip--das:hover,
+.vocab-chip--das:focus-visible {
+  border-color: #2f9a5b;
 }
 
 .vocab-chip:active {
@@ -1135,8 +1236,7 @@ main {
 }
 
 .vocab-chip.is-speaking {
-  background: var(--accent-soft);
-  border-color: var(--leaf);
+  box-shadow: inset 0 0 0 2px currentColor;
 }
 
 .vocab-chip-de {
@@ -1145,6 +1245,10 @@ main {
   font-weight: 600;
   line-height: 1.2;
   color: var(--ink);
+}
+
+.vocab-article {
+  font-weight: 700;
 }
 
 .vocab-chip-en {
