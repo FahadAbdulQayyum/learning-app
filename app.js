@@ -18,6 +18,8 @@
 
   /** @type {SpeechSynthesisVoice | null} */
   let germanVoice = null;
+  /** @type {"female" | "male" | "unknown"} */
+  let germanVoiceGender = "unknown";
   /** @type {"female" | "male"} */
   let voiceGender = loadVoiceGender();
   /** @type {HTMLElement | null} */
@@ -155,23 +157,98 @@
     return saved === "male" ? "male" : "female";
   }
 
+  /**
+   * @param {SpeechSynthesisVoice} voice
+   * @returns {"female" | "male" | "unknown"}
+   */
+  function classifyVoiceGender(voice) {
+    const label = `${voice.name} ${voice.voiceURI}`;
+    const femaleHints =
+      /anna|katja|hedda|helena|petra|vicki|zira|susan|ingrid|gisela|lena|female|frau|google\s*deutsch|deutsch\s*google/i;
+    const maleHints =
+      /stefan|markus|georg|yannick|conrad|klaus|ralf|david|martin|hans|male|herr|thomas|michael|andreas/i;
+
+    if (maleHints.test(label)) return "male";
+    if (femaleHints.test(label)) return "female";
+    return "unknown";
+  }
+
+  function getGermanVoices() {
+    return speechSynthesis
+      .getVoices()
+      .filter((v) => /^de(-|_)/i.test(v.lang))
+      .sort((a, b) => {
+        // Prefer Germany over Austria/Switzerland, then Microsoft/Google quality voices
+        const rank = (v) => {
+          let score = 0;
+          if (/de-DE/i.test(v.lang)) score += 4;
+          if (/microsoft|google/i.test(v.name)) score += 2;
+          if (/natural|online/i.test(v.name)) score += 1;
+          return score;
+        };
+        return rank(b) - rank(a);
+      });
+  }
+
   function pickGermanVoice() {
-    const voices = speechSynthesis.getVoices().filter((v) => /^de(-|_)/i.test(v.lang));
-    const femaleHints = /anna|katja|hedda|helena|petra|vicki|zira|susan|female|frau/i;
-    const maleHints = /stefan|markus|georg|yannick|conrad|ralf|david|male|herr|martin/i;
+    const voices = getGermanVoices();
+    if (!voices.length) {
+      germanVoice = null;
+      germanVoiceGender = "unknown";
+      updateVoiceLabels();
+      return;
+    }
 
-    const gendered =
-      voiceGender === "female"
-        ? voices.find((v) => femaleHints.test(v.name))
-        : voices.find((v) => maleHints.test(v.name));
+    const grouped = {
+      female: voices.filter((v) => classifyVoiceGender(v) === "female"),
+      male: voices.filter((v) => classifyVoiceGender(v) === "male"),
+      unknown: voices.filter((v) => classifyVoiceGender(v) === "unknown"),
+    };
 
-    const preferred =
-      gendered ||
-      voices.find((v) => /Google|Microsoft/i.test(v.name)) ||
-      voices[0] ||
-      null;
+    /** @type {SpeechSynthesisVoice | undefined} */
+    let chosen;
+    /** @type {"female" | "male" | "unknown"} */
+    let matched = "unknown";
 
-    germanVoice = preferred;
+    if (voiceGender === "male") {
+      chosen = grouped.male[0] || grouped.unknown[0] || grouped.female[0];
+      matched = chosen ? classifyVoiceGender(chosen) : "unknown";
+    } else {
+      chosen = grouped.female[0] || grouped.unknown[0] || grouped.male[0];
+      matched = chosen ? classifyVoiceGender(chosen) : "unknown";
+    }
+
+    germanVoice = chosen || null;
+    germanVoiceGender = matched;
+    updateVoiceLabels();
+  }
+
+  function updateVoiceLabels() {
+    const labelEl = document.getElementById("voice-active-label");
+    const hintEl = document.getElementById("voice-hint");
+    if (!labelEl || !hintEl) return;
+
+    if (!germanVoice) {
+      labelEl.textContent = "No German voice found on this device.";
+      hintEl.hidden = false;
+      hintEl.textContent = "Install a German voice in your system speech settings.";
+      return;
+    }
+
+    labelEl.textContent = `Using: ${germanVoice.name}`;
+
+    if (voiceGender === "male" && germanVoiceGender !== "male") {
+      hintEl.hidden = false;
+      hintEl.textContent =
+        "No male German voice installed. Using a deeper pitch. For a real male voice, install Microsoft Conrad or Stefan in Windows speech settings.";
+    } else if (voiceGender === "female" && germanVoiceGender !== "female") {
+      hintEl.hidden = false;
+      hintEl.textContent =
+        "No female German voice installed. Using a higher pitch. Install Microsoft Katja for a clearer female voice.";
+    } else {
+      hintEl.hidden = true;
+      hintEl.textContent = "";
+    }
   }
 
   pickGermanVoice();
@@ -190,11 +267,16 @@
         const active = btn.getAttribute("data-voice") === voiceGender;
         btn.setAttribute("aria-pressed", active ? "true" : "false");
       });
+      updateVoiceLabels();
     }
 
     function setOpen(open) {
       panel.hidden = !open;
       fab.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) {
+        pickGermanVoice();
+        syncOptions();
+      }
     }
 
     syncOptions();
@@ -211,9 +293,7 @@
         localStorage.setItem(VOICE_KEY, next);
         pickGermanVoice();
         syncOptions();
-
-        // Short preview so the choice is clear
-        speak(next === "female" ? "Guten Tag" : "Guten Tag");
+        speak("Guten Tag, ich lerne Deutsch.");
       });
     });
 
@@ -261,10 +341,16 @@
     pickGermanVoice();
 
     const utterance = new SpeechSynthesisUtterance(speakable(text));
-    utterance.lang = "de-DE";
-    utterance.rate = 0.92;
-    // Gentle pitch bias when the OS only offers one German voice
-    utterance.pitch = voiceGender === "female" ? 1.08 : 0.9;
+    utterance.lang = germanVoice?.lang || "de-DE";
+    utterance.rate = voiceGender === "male" ? 0.88 : 0.92;
+
+    // Stronger pitch shift only when the installed voice gender doesn't match
+    if (voiceGender === "male") {
+      utterance.pitch = germanVoiceGender === "male" ? 0.95 : 0.62;
+    } else {
+      utterance.pitch = germanVoiceGender === "female" ? 1.05 : 1.2;
+    }
+
     if (germanVoice) utterance.voice = germanVoice;
 
     if (highlightEl) {

@@ -246,6 +246,21 @@ body.has-install-banner .voice-settings {
   color: #fff;
 }
 
+.voice-active-label {
+  margin: 0.7rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+  word-break: break-word;
+}
+
+.voice-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .atmosphere {
   position: fixed;
   inset: 0;
