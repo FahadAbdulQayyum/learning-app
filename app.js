@@ -150,6 +150,7 @@
   initNameGate();
   initThemeToggle();
   initVoiceSettings();
+  initHourlyQuiz();
   updateFavouritesCount();
 
   function loadVoiceGender() {
@@ -307,6 +308,193 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") setOpen(false);
     });
+  }
+
+  function initHourlyQuiz() {
+    const QUIZ_KEY = "laut-hourly-quiz";
+    const LAST_KEY = "laut-hourly-quiz-last";
+    const HOUR_MS = 60 * 60 * 1000;
+    const toggle = document.getElementById("hourly-quiz-toggle");
+    const modal = document.getElementById("quiz-modal");
+    const modalDe = document.getElementById("quiz-modal-de");
+    const modalAnswer = document.getElementById("quiz-modal-answer");
+    const modalPrompt = document.getElementById("quiz-modal-prompt");
+    const revealBtn = document.getElementById("quiz-reveal-btn");
+    const closeBtn = document.getElementById("quiz-close-btn");
+    if (!toggle || !modal) return;
+
+    /** @type {number | null} */
+    let timerId = null;
+
+    function isEnabled() {
+      return localStorage.getItem(QUIZ_KEY) === "1";
+    }
+
+    function syncToggle() {
+      const on = isEnabled();
+      toggle.setAttribute("aria-pressed", on ? "true" : "false");
+      toggle.textContent = on ? "Hourly quiz is on" : "Enable hourly word quiz";
+    }
+
+    function openQuizModal(de, en) {
+      modalDe.textContent = de || "";
+      modalAnswer.textContent = en || "";
+      modalAnswer.hidden = true;
+      modalPrompt.hidden = false;
+      revealBtn.hidden = false;
+      modal.hidden = false;
+      document.body.classList.add("is-gated");
+    }
+
+    function closeQuizModal() {
+      modal.hidden = true;
+      document.body.classList.remove("is-gated");
+      const url = new URL(window.location.href);
+      ["quiz", "de", "en"].forEach((key) => url.searchParams.delete(key));
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+
+    async function askServiceWorkerToNotify(word) {
+      if (!("serviceWorker" in navigator) || Notification.permission !== "granted") return;
+      const reg = await navigator.serviceWorker.ready;
+      reg.active?.postMessage({ type: "SHOW_QUIZ_NOTIFICATION", word: word || null });
+    }
+
+    async function fireQuizNotification() {
+      if (!isEnabled() || Notification.permission !== "granted") return;
+      if (typeof pickQuizWord !== "function") return;
+
+      const now = Date.now();
+      const last = Number(localStorage.getItem(LAST_KEY) || 0);
+      if (last && now - last < HOUR_MS - 30 * 1000) return;
+
+      const word = pickQuizWord();
+      localStorage.setItem(LAST_KEY, String(now));
+      await askServiceWorkerToNotify(word);
+    }
+
+    function clearHourlyTimer() {
+      if (timerId !== null) {
+        window.clearInterval(timerId);
+        timerId = null;
+      }
+    }
+
+    function startHourlyTimer() {
+      clearHourlyTimer();
+      timerId = window.setInterval(() => {
+        fireQuizNotification();
+      }, HOUR_MS);
+    }
+
+    async function registerPeriodicSync() {
+      if (!("serviceWorker" in navigator)) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if ("periodicSync" in reg) {
+          const status = await navigator.permissions.query({
+            name: /** @type {PermissionName} */ ("periodic-background-sync"),
+          });
+          if (status.state === "granted") {
+            await /** @type {{ periodicSync: { register: Function } }} */ (reg).periodicSync.register(
+              "hourly-vocab-quiz",
+              { minInterval: HOUR_MS }
+            );
+          }
+        }
+      } catch {
+        /* Unsupported or denied — foreground timer still works */
+      }
+    }
+
+    async function unregisterPeriodicSync() {
+      if (!("serviceWorker" in navigator)) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if ("periodicSync" in reg) {
+          await /** @type {{ periodicSync: { unregister: Function } }} */ (reg).periodicSync.unregister(
+            "hourly-vocab-quiz"
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    async function enableQuiz() {
+      if (!("Notification" in window)) {
+        alert("Notifications are not supported in this browser.");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        alert("Please allow notifications to get the hourly word quiz.");
+        localStorage.setItem(QUIZ_KEY, "0");
+        syncToggle();
+        return;
+      }
+
+      localStorage.setItem(QUIZ_KEY, "1");
+      syncToggle();
+      startHourlyTimer();
+      await registerPeriodicSync();
+
+      // Immediate sample so the feature is obvious
+      localStorage.setItem(LAST_KEY, "0");
+      await fireQuizNotification();
+    }
+
+    async function disableQuiz() {
+      localStorage.setItem(QUIZ_KEY, "0");
+      syncToggle();
+      clearHourlyTimer();
+      await unregisterPeriodicSync();
+    }
+
+    toggle.addEventListener("click", () => {
+      if (isEnabled()) disableQuiz();
+      else enableQuiz();
+    });
+
+    revealBtn.addEventListener("click", () => {
+      modalAnswer.hidden = false;
+      modalPrompt.hidden = true;
+      revealBtn.hidden = true;
+    });
+
+    closeBtn.addEventListener("click", closeQuizModal);
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeQuizModal();
+    });
+
+    // Open from notification deep link
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("quiz") === "1") {
+      openQuizModal(params.get("de") || "", params.get("en") || "");
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        const data = event.data || {};
+        if (data.type === "OPEN_QUIZ") {
+          openQuizModal(data.de || "", data.en || "");
+        }
+      });
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && isEnabled()) {
+        fireQuizNotification();
+      }
+    });
+
+    syncToggle();
+    if (isEnabled() && Notification.permission === "granted") {
+      startHourlyTimer();
+      registerPeriodicSync();
+      fireQuizNotification();
+    }
   }
 
   function speakable(text) {

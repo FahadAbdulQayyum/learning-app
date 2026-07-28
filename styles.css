@@ -261,6 +261,112 @@ body.has-install-banner .voice-settings {
   color: var(--muted);
 }
 
+.settings-divider {
+  height: 1px;
+  margin: 0.85rem 0;
+  background: var(--line);
+}
+
+.hourly-quiz-toggle {
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.hourly-quiz-toggle:hover {
+  border-color: var(--leaf);
+  color: var(--leaf-deep);
+}
+
+.hourly-quiz-toggle[aria-pressed="true"] {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: #fff;
+}
+
+.quiz-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(12, 20, 24, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.quiz-modal[hidden] {
+  display: none;
+}
+
+.quiz-modal-card {
+  width: min(100%, 22rem);
+  padding: 1.35rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-strong);
+  text-align: center;
+  animation: rise 0.35s ease both;
+}
+
+.quiz-modal-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.quiz-modal-de {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  font-weight: 700;
+  color: var(--leaf-deep);
+}
+
+.quiz-modal-prompt {
+  margin: 0.55rem 0 0;
+  color: var(--ink-soft);
+}
+
+.quiz-modal-answer {
+  margin: 0.85rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.quiz-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+}
+
+.quiz-close-btn {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .atmosphere {
   position: fixed;
   inset: 0;
