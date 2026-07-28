@@ -603,6 +603,7 @@
   resetFeed();
   initStories();
   initVocabulary();
+  initGrammar();
   initViewNav();
 
   if ("serviceWorker" in navigator) {
@@ -620,6 +621,7 @@
       practice: document.getElementById("view-practice"),
       stories: document.getElementById("view-stories"),
       vocabulary: document.getElementById("view-vocabulary"),
+      grammar: document.getElementById("view-grammar"),
     };
     const navButtons = document.querySelectorAll(".nav-btn[data-view]");
 
@@ -642,6 +644,7 @@
 
         if (view === "stories") showStoriesList();
         if (view === "vocabulary") showVocabList();
+        if (view === "grammar") showGrammarList();
       });
     });
   }
@@ -862,6 +865,185 @@
     article.textContent = match[1];
 
     return [article, document.createTextNode(match[2] + match[3])];
+  }
+
+  function showGrammarList() {
+    const listEl = document.getElementById("grammar-list");
+    const readerEl = document.getElementById("grammar-reader");
+    listEl.hidden = false;
+    readerEl.hidden = true;
+    readerEl.replaceChildren();
+  }
+
+  function initGrammar() {
+    const listEl = document.getElementById("grammar-list");
+    if (!listEl || typeof GRAMMAR_SECTIONS === "undefined") return;
+    renderGrammarList();
+  }
+
+  function tenseLabel(tense) {
+    if (tense === "present") return "Present";
+    if (tense === "past") return "Past";
+    if (tense === "future") return "Future";
+    return "Mixed";
+  }
+
+  function renderGrammarList() {
+    const listEl = document.getElementById("grammar-list");
+    listEl.replaceChildren();
+
+    const intro = document.createElement("div");
+    intro.className = "stories-intro";
+    intro.innerHTML = `
+      <h2>Grammar</h2>
+      <p>Build sentences in present, past, and future. Tap words to hear them, and study the pattern under each example.</p>
+    `;
+    listEl.append(intro);
+
+    const filters = document.createElement("div");
+    filters.className = "grammar-filters";
+    filters.innerHTML = `
+      <button type="button" class="grammar-filter is-active" data-tense="all">All</button>
+      <button type="button" class="grammar-filter" data-tense="present">Present</button>
+      <button type="button" class="grammar-filter" data-tense="past">Past</button>
+      <button type="button" class="grammar-filter" data-tense="future">Future</button>
+    `;
+    listEl.append(filters);
+
+    const cardsHost = document.createElement("div");
+    cardsHost.id = "grammar-cards";
+    cardsHost.className = "grammar-cards";
+    listEl.append(cardsHost);
+
+    /** @type {string} */
+    let activeTense = "all";
+
+    const paintCards = () => {
+      cardsHost.replaceChildren();
+      const sections = GRAMMAR_SECTIONS.filter((section) => {
+        if (activeTense === "all") return true;
+        return section.tense === activeTense || section.tense === "mixed";
+      });
+
+      sections.forEach((section, index) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "story-card vocab-card";
+        card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
+        card.innerHTML = `
+          <span class="story-card-meta">
+            <span class="tense-pill tense-pill--${section.tense}">${tenseLabel(section.tense)}</span>
+            ${section.examples.length} examples
+          </span>
+          <span class="story-card-title-en">${section.titleEn}</span>
+          <span class="story-card-title vocab-card-title-de">${section.title}</span>
+          <span class="story-card-excerpt">${section.description}</span>
+        `;
+        card.addEventListener("click", () => openGrammarSection(section.id));
+        cardsHost.append(card);
+      });
+    };
+
+    filters.querySelectorAll(".grammar-filter").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeTense = btn.getAttribute("data-tense") || "all";
+        filters.querySelectorAll(".grammar-filter").forEach((other) => {
+          other.classList.toggle("is-active", other === btn);
+        });
+        paintCards();
+      });
+    });
+
+    paintCards();
+  }
+
+  /** @param {string} sectionId */
+  function openGrammarSection(sectionId) {
+    const section = GRAMMAR_SECTIONS.find((s) => s.id === sectionId);
+    if (!section) return;
+
+    const listEl = document.getElementById("grammar-list");
+    const readerEl = document.getElementById("grammar-reader");
+    listEl.hidden = true;
+    readerEl.hidden = false;
+    readerEl.replaceChildren();
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "story-back";
+    backBtn.textContent = "← All grammar";
+    backBtn.addEventListener("click", showGrammarList);
+
+    const header = document.createElement("header");
+    header.className = "story-header vocab-header";
+    header.innerHTML = `
+      <p class="story-meta">
+        <span class="tense-pill tense-pill--${section.tense}">${tenseLabel(section.tense)}</span>
+        ${section.examples.length} examples
+      </p>
+      <h2 class="story-title-en vocab-title-en">${section.titleEn}</h2>
+      <button type="button" class="vocab-title-de" aria-label="Pronounce ${section.title}">${section.title}</button>
+      <p class="vocab-section-desc">${section.description}</p>
+      <p class="grammar-tip"><strong>Tip:</strong> ${section.tip}</p>
+    `;
+
+    const titleBtn = header.querySelector(".vocab-title-de");
+    titleBtn.addEventListener("click", () => {
+      speak(section.title, titleBtn, null, { soft: true });
+    });
+
+    readerEl.append(backBtn, header);
+
+    section.examples.forEach((example, index) => {
+      const block = document.createElement("section");
+      block.className = "grammar-example";
+
+      const top = document.createElement("div");
+      top.className = "grammar-example-top";
+
+      const pattern = document.createElement("p");
+      pattern.className = "grammar-pattern";
+      pattern.textContent = `${index + 1}. ${example.pattern}`;
+
+      const playBtn = document.createElement("button");
+      playBtn.type = "button";
+      playBtn.className = "play-sentence play-paragraph";
+      playBtn.innerHTML = `${playIcon}<span>Play sentence</span>`;
+      playBtn.addEventListener("click", () => speak(example.text, null, playBtn));
+
+      top.append(pattern, playBtn);
+
+      const meaning = document.createElement("p");
+      meaning.className = "full-meaning";
+      meaning.textContent = example.meaning;
+
+      const words = document.createElement("div");
+      words.className = "words story-words";
+
+      example.words.forEach((word) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "word-chip";
+        chip.setAttribute("aria-label", `Pronounce ${speakable(word.de)}`);
+
+        const de = document.createElement("span");
+        de.className = "word-de";
+        de.textContent = word.de;
+
+        const en = document.createElement("span");
+        en.className = "word-en";
+        en.textContent = word.en;
+
+        chip.append(de, en);
+        chip.addEventListener("click", () => speak(word.de, chip, null, { soft: true }));
+        words.append(chip);
+      });
+
+      block.append(top, meaning, words);
+      readerEl.append(block);
+    });
+
+    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function showStoriesList() {

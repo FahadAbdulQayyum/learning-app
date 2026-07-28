@@ -105,6 +105,7 @@
         <button type="button" class="nav-btn is-active" data-view="practice" aria-pressed="true">Practice</button>
         <button type="button" class="nav-btn" data-view="stories" aria-pressed="false">Stories</button>
         <button type="button" class="nav-btn" data-view="vocabulary" aria-pressed="false">Vocabulary</button>
+        <button type="button" class="nav-btn" data-view="grammar" aria-pressed="false">Grammar</button>
         <button
           type="button"
           id="theme-toggle"
@@ -188,15 +189,21 @@
         <div id="vocab-list" class="vocab-list"></div>
         <article id="vocab-reader" class="vocab-reader" hidden></article>
       </section>
+
+      <section id="view-grammar" class="view" aria-label="Grammar" hidden>
+        <div id="grammar-list" class="grammar-list"></div>
+        <article id="grammar-reader" class="grammar-reader" hidden></article>
+      </section>
     </main>
 
     <footer class="site-footer">
-      <p>Pronunciation uses your browser’s German voice. Tap any word across Practice, Stories, or Vocabulary.</p>
+      <p>Pronunciation uses your browser’s German voice. Tap any word across Practice, Stories, Vocabulary, or Grammar.</p>
     </footer>
 
     <script src="data.js"></script>
     <script src="stories.js"></script>
     <script src="vocabulary.js"></script>
+    <script src="grammar.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
