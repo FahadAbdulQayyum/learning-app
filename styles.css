@@ -141,6 +141,111 @@ body.has-install-banner {
   }
 }
 
+.voice-settings {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+body.has-install-banner .voice-settings {
+  bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+.voice-fab {
+  display: inline-grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--leaf);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(17, 74, 82, 0.28);
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.voice-fab:hover {
+  background: var(--leaf-deep);
+}
+
+.voice-fab:active {
+  transform: scale(0.96);
+}
+
+.voice-fab[aria-expanded="true"] {
+  background: var(--leaf-deep);
+}
+
+.voice-fab svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.voice-panel {
+  width: min(14.5rem, calc(100vw - 2rem));
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-strong);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(15, 26, 30, 0.18);
+  animation: rise 0.25s ease both;
+}
+
+.voice-panel[hidden] {
+  display: none;
+}
+
+.voice-panel-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.voice-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.voice-option {
+  padding: 0.65rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.voice-option:hover {
+  border-color: var(--leaf);
+  color: var(--leaf-deep);
+}
+
+.voice-option[aria-pressed="true"] {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: #fff;
+}
+
 .atmosphere {
   position: fixed;
   inset: 0;

@@ -66,6 +66,23 @@
       </button>
     </div>
 
+    <div class="voice-settings">
+      <div id="voice-panel" class="voice-panel" hidden role="dialog" aria-label="Voice settings">
+        <p class="voice-panel-title">Voice</p>
+        <div class="voice-options" role="radiogroup" aria-label="Voice gender">
+          <button type="button" class="voice-option" data-voice="female" aria-pressed="true">Female</button>
+          <button type="button" class="voice-option" data-voice="male" aria-pressed="false">Male</button>
+        </div>
+      </div>
+      <button type="button" id="voice-fab" class="voice-fab" aria-label="Voice settings" aria-expanded="false" aria-controls="voice-panel" title="Voice settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z" />
+          <path d="M19 11a7 7 0 0 1-14 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
     <header class="site-header">
       <p class="thanks">
         Thanks to

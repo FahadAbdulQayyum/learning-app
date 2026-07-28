@@ -2,6 +2,7 @@
   const BATCH_SIZE = 8;
   const NAME_KEY = "laut-learner-name";
   const FAV_KEY = "laut-favourite-ids";
+  const VOICE_KEY = "laut-voice-gender";
 
   const listEl = document.getElementById("sentence-list");
   const emptyEl = document.getElementById("empty-state");
@@ -17,6 +18,8 @@
 
   /** @type {SpeechSynthesisVoice | null} */
   let germanVoice = null;
+  /** @type {"female" | "male"} */
+  let voiceGender = loadVoiceGender();
   /** @type {HTMLElement | null} */
   let activeEl = null;
 
@@ -144,20 +147,86 @@
 
   initNameGate();
   initThemeToggle();
+  initVoiceSettings();
   updateFavouritesCount();
 
+  function loadVoiceGender() {
+    const saved = localStorage.getItem(VOICE_KEY);
+    return saved === "male" ? "male" : "female";
+  }
+
   function pickGermanVoice() {
-    const voices = speechSynthesis.getVoices();
+    const voices = speechSynthesis.getVoices().filter((v) => /^de(-|_)/i.test(v.lang));
+    const femaleHints = /anna|katja|hedda|helena|petra|vicki|zira|susan|female|frau/i;
+    const maleHints = /stefan|markus|georg|yannick|conrad|ralf|david|male|herr|martin/i;
+
+    const gendered =
+      voiceGender === "female"
+        ? voices.find((v) => femaleHints.test(v.name))
+        : voices.find((v) => maleHints.test(v.name));
+
     const preferred =
-      voices.find((v) => /^de(-|_)/i.test(v.lang) && /Google|Microsoft|Anna|Helena|Katja/i.test(v.name)) ||
-      voices.find((v) => /^de(-|_)/i.test(v.lang)) ||
+      gendered ||
+      voices.find((v) => /Google|Microsoft/i.test(v.name)) ||
+      voices[0] ||
       null;
+
     germanVoice = preferred;
   }
 
   pickGermanVoice();
   if (typeof speechSynthesis !== "undefined") {
     speechSynthesis.addEventListener("voiceschanged", pickGermanVoice);
+  }
+
+  function initVoiceSettings() {
+    const fab = document.getElementById("voice-fab");
+    const panel = document.getElementById("voice-panel");
+    const options = document.querySelectorAll(".voice-option");
+    if (!fab || !panel) return;
+
+    function syncOptions() {
+      options.forEach((btn) => {
+        const active = btn.getAttribute("data-voice") === voiceGender;
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
+    function setOpen(open) {
+      panel.hidden = !open;
+      fab.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    syncOptions();
+
+    fab.addEventListener("click", (event) => {
+      event.stopPropagation();
+      setOpen(panel.hidden);
+    });
+
+    options.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const next = btn.getAttribute("data-voice") === "male" ? "male" : "female";
+        voiceGender = next;
+        localStorage.setItem(VOICE_KEY, next);
+        pickGermanVoice();
+        syncOptions();
+
+        // Short preview so the choice is clear
+        speak(next === "female" ? "Guten Tag" : "Guten Tag");
+      });
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = /** @type {Node} */ (event.target);
+      if (!panel.hidden && !panel.contains(target) && !fab.contains(target)) {
+        setOpen(false);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
   }
 
   function speakable(text) {
@@ -189,10 +258,13 @@
 
     speechSynthesis.cancel();
     clearSpeakingState();
+    pickGermanVoice();
 
     const utterance = new SpeechSynthesisUtterance(speakable(text));
     utterance.lang = "de-DE";
     utterance.rate = 0.92;
+    // Gentle pitch bias when the OS only offers one German voice
+    utterance.pitch = voiceGender === "female" ? 1.08 : 0.9;
     if (germanVoice) utterance.voice = germanVoice;
 
     if (highlightEl) {
