@@ -1,4 +1,4 @@
-const CACHE_NAME = "laut-v4";
+const CACHE_NAME = "laut-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
