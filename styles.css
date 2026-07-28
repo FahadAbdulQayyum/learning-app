@@ -171,6 +171,35 @@ body.has-install-banner .voice-settings {
   bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
 }
 
+.app-version {
+  position: fixed;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 45;
+  margin: 0;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  color: var(--muted, #5a6b6e);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(17, 74, 82, 0.08);
+}
+
+body.has-install-banner .app-version {
+  bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+html.js-motion .app-version {
+  animation: none;
+}
+
 .voice-fab {
   display: inline-grid;
   place-items: center;

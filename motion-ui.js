@@ -161,12 +161,14 @@
       enterHeaderChrome();
       refresh();
       popIn(document.querySelector(".voice-fab"));
+      popIn(document.querySelector(".app-version"));
     });
   } else {
     enterBrand();
     enterHeaderChrome();
     refresh();
     popIn(document.querySelector(".voice-fab"));
+    popIn(document.querySelector(".app-version"));
   }
 
   window.LautMotion = {

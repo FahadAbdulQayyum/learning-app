@@ -1,0 +1,15 @@
+---
+description: Before pushing to origin0, bump LAUT_VERSION then commit and push
+alwaysApply: true
+---
+
+# origin0 push = bump version first
+
+When the user asks to **push to origin0**, **pull to origin0**, or similar (publish current work to `origin0`):
+
+1. Bump `window.LAUT_VERSION` in `version.js` by one **patch** step (e.g. `8.0.0` → `8.0.1`). Keep `MAJOR.MINOR.PATCH` semver.
+2. Include that version change in the same commit as any other pending work (or a tiny version-only commit if nothing else changed).
+3. Then push `main` to **`origin0`** (not `origin` unless they ask).
+4. Do **not** bump on every commit — only when they request a push to origin0.
+
+The floating badge `#app-version` reads from `LAUT_VERSION`; no other files need the version string unless the cache name is being bumped for other reasons.

@@ -15,6 +15,11 @@
   const FAV_KEY = "laut-favourite-ids";
   const VOICE_KEY = "laut-voice-gender";
 
+  const versionEl = document.getElementById("app-version");
+  if (versionEl && window.LAUT_VERSION) {
+    versionEl.textContent = `v${window.LAUT_VERSION}`;
+  }
+
   const listEl = document.getElementById("sentence-list");
   const emptyEl = document.getElementById("empty-state");
   const searchEl = document.getElementById("search");
