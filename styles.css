@@ -982,6 +982,80 @@ main {
   font-size: clamp(1.05rem, 2.8vw, 1.25rem);
 }
 
+.vocab-search-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.vocab-section-desc {
+  margin: 0.65rem 0 0;
+  max-width: 34rem;
+  color: var(--ink-soft);
+}
+
+.vocab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.vocab-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-height: 5.5rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.vocab-chip:hover,
+.vocab-chip:focus-visible {
+  border-color: var(--leaf);
+  outline: none;
+}
+
+.vocab-chip:active {
+  transform: translateY(1px);
+}
+
+.vocab-chip.is-speaking {
+  background: var(--accent-soft);
+  border-color: var(--leaf);
+}
+
+.vocab-chip-de {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.vocab-chip-en {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.vocab-chip-note {
+  margin-top: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--leaf);
+}
+
 .site-footer {
   max-width: 920px;
   margin: 0 auto;

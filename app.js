@@ -430,6 +430,7 @@
 
   resetFeed();
   initStories();
+  initVocabulary();
   initViewNav();
 
   if ("serviceWorker" in navigator) {
@@ -443,14 +444,16 @@
   initInstallBanner();
 
   function initViewNav() {
-    const practiceView = document.getElementById("view-practice");
-    const storiesView = document.getElementById("view-stories");
-    const navButtons = document.querySelectorAll(".nav-btn");
+    const views = {
+      practice: document.getElementById("view-practice"),
+      stories: document.getElementById("view-stories"),
+      vocabulary: document.getElementById("view-vocabulary"),
+    };
+    const navButtons = document.querySelectorAll(".nav-btn[data-view]");
 
     navButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const view = btn.getAttribute("data-view");
-        const showStories = view === "stories";
 
         navButtons.forEach((other) => {
           const active = other === btn;
@@ -458,14 +461,15 @@
           other.setAttribute("aria-pressed", active ? "true" : "false");
         });
 
-        practiceView.hidden = showStories;
-        storiesView.hidden = !showStories;
-        practiceView.classList.toggle("is-active", !showStories);
-        storiesView.classList.toggle("is-active", showStories);
+        Object.entries(views).forEach(([name, el]) => {
+          if (!el) return;
+          const active = name === view;
+          el.hidden = !active;
+          el.classList.toggle("is-active", active);
+        });
 
-        if (showStories) {
-          showStoriesList();
-        }
+        if (view === "stories") showStoriesList();
+        if (view === "vocabulary") showVocabList();
       });
     });
   }
@@ -474,6 +478,171 @@
     const listElStories = document.getElementById("stories-list");
     if (!listElStories || typeof STORIES === "undefined") return;
     renderStoriesList();
+  }
+
+  function initVocabulary() {
+    const listEl = document.getElementById("vocab-list");
+    if (!listEl || typeof VOCAB_SECTIONS === "undefined") return;
+    renderVocabList();
+  }
+
+  function showVocabList() {
+    const listEl = document.getElementById("vocab-list");
+    const readerEl = document.getElementById("vocab-reader");
+    listEl.hidden = false;
+    readerEl.hidden = true;
+    readerEl.replaceChildren();
+  }
+
+  function renderVocabList() {
+    const listEl = document.getElementById("vocab-list");
+    listEl.replaceChildren();
+
+    const intro = document.createElement("div");
+    intro.className = "stories-intro";
+    intro.innerHTML = `
+      <h2>Vocabulary</h2>
+      <p>Themed word lists with English meanings. Tap a word to hear it, or play a whole section.</p>
+    `;
+    listEl.append(intro);
+
+    const searchWrap = document.createElement("label");
+    searchWrap.className = "search-wrap vocab-search-wrap";
+    searchWrap.innerHTML = `
+      <span class="visually-hidden">Filter vocabulary topics</span>
+      <input id="vocab-search" type="search" placeholder="Filter topics or words…" autocomplete="off" />
+    `;
+    listEl.append(searchWrap);
+
+    const cardsHost = document.createElement("div");
+    cardsHost.id = "vocab-cards";
+    cardsHost.className = "vocab-cards";
+    listEl.append(cardsHost);
+
+    const searchInput = searchWrap.querySelector("#vocab-search");
+    const paintCards = (query = "") => {
+      const q = query.trim().toLowerCase();
+      cardsHost.replaceChildren();
+
+      const sections = VOCAB_SECTIONS.filter((section) => {
+        if (!q) return true;
+        const hay = `${section.title} ${section.titleEn} ${section.description} ${section.words
+          .map((w) => `${w.de} ${w.en} ${w.note || ""}`)
+          .join(" ")}`.toLowerCase();
+        return hay.includes(q);
+      });
+
+      if (!sections.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "No vocabulary topics match that filter.";
+        cardsHost.append(empty);
+        return;
+      }
+
+      sections.forEach((section, index) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "story-card";
+        card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
+        card.innerHTML = `
+          <span class="story-card-meta">${section.words.length} words</span>
+          <span class="story-card-title">${section.title}</span>
+          <span class="story-card-title-en">${section.titleEn}</span>
+          <span class="story-card-excerpt">${section.description}</span>
+        `;
+        card.addEventListener("click", () => openVocabSection(section.id, q));
+        cardsHost.append(card);
+      });
+    };
+
+    paintCards();
+    searchInput.addEventListener("input", () => paintCards(searchInput.value));
+  }
+
+  /**
+   * @param {string} sectionId
+   * @param {string} [filterQuery]
+   */
+  function openVocabSection(sectionId, filterQuery = "") {
+    const section = VOCAB_SECTIONS.find((s) => s.id === sectionId);
+    if (!section) return;
+
+    const listEl = document.getElementById("vocab-list");
+    const readerEl = document.getElementById("vocab-reader");
+    listEl.hidden = true;
+    readerEl.hidden = false;
+    readerEl.replaceChildren();
+
+    const q = filterQuery.trim().toLowerCase();
+    const words = q
+      ? section.words.filter((w) => `${w.de} ${w.en} ${w.note || ""}`.toLowerCase().includes(q))
+      : section.words.slice();
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "story-back";
+    backBtn.textContent = "← All vocabulary";
+    backBtn.addEventListener("click", showVocabList);
+
+    const header = document.createElement("header");
+    header.className = "story-header";
+    header.innerHTML = `
+      <p class="story-meta">${words.length} words</p>
+      <h2 class="story-title">${section.title}</h2>
+      <p class="story-title-en">${section.titleEn}</p>
+      <p class="vocab-section-desc">${section.description}</p>
+    `;
+
+    const playAllBtn = document.createElement("button");
+    playAllBtn.type = "button";
+    playAllBtn.className = "play-sentence story-play-all";
+    playAllBtn.innerHTML = `${playIcon}<span>Play all words</span>`;
+    playAllBtn.addEventListener("click", () => {
+      const fullText = words.map((w) => w.de).join(". ");
+      speak(fullText, null, playAllBtn);
+    });
+
+    const grid = document.createElement("div");
+    grid.className = "vocab-grid";
+
+    if (!words.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-state";
+      empty.textContent = "No words in this topic match that filter.";
+      readerEl.append(backBtn, header, empty);
+      return;
+    }
+
+    words.forEach((word) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "vocab-chip";
+      chip.setAttribute("aria-label", `Pronounce ${speakable(word.de)}`);
+
+      const de = document.createElement("span");
+      de.className = "vocab-chip-de";
+      de.textContent = word.de;
+
+      const en = document.createElement("span");
+      en.className = "vocab-chip-en";
+      en.textContent = word.en;
+
+      chip.append(de, en);
+
+      if (word.note) {
+        const note = document.createElement("span");
+        note.className = "vocab-chip-note";
+        note.textContent = word.note;
+        chip.append(note);
+      }
+
+      chip.addEventListener("click", () => speak(word.de, chip));
+      grid.append(chip);
+    });
+
+    readerEl.append(backBtn, header, playAllBtn, grid);
+    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function showStoriesList() {

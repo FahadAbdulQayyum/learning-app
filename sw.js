@@ -1,4 +1,4 @@
-const CACHE_NAME = "laut-v3";
+const CACHE_NAME = "laut-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./app.js",
   "./data.js",
   "./stories.js",
+  "./vocabulary.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
