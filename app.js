@@ -73,6 +73,35 @@
     updateFavouritesCount();
   }
 
+  function initThemeToggle() {
+    const THEME_KEY = "laut-theme";
+    const toggle = document.getElementById("theme-toggle");
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (!toggle) return;
+
+    function isDark() {
+      return document.documentElement.getAttribute("data-theme") === "dark";
+    }
+
+    function applyTheme(dark) {
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+      toggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+      if (themeMeta) themeMeta.setAttribute("content", dark ? "#0f1a1e" : "#114a52");
+    }
+
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === "dark" || saved === "light") {
+      applyTheme(saved === "dark");
+    } else {
+      applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+
+    toggle.addEventListener("click", () => {
+      applyTheme(!isDark());
+    });
+  }
+
   function showWelcome(name) {
     welcomeEl.textContent = `Welcome ${name}`;
     welcomeEl.hidden = false;
@@ -114,6 +143,7 @@
   }
 
   initNameGate();
+  initThemeToggle();
   updateFavouritesCount();
 
   function pickGermanVoice() {

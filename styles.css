@@ -9,9 +9,40 @@
   --accent-soft: rgba(31, 111, 122, 0.16);
   --line: rgba(21, 32, 40, 0.12);
   --glow: rgba(31, 111, 122, 0.2);
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-strong: rgba(255, 255, 255, 0.85);
+  --chip-hover: rgba(255, 255, 255, 0.7);
+  --gate-veil: rgba(237, 243, 246, 0.92);
+  --install-btn-bg: #fff;
   --radius: 18px;
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --atmosphere-1: rgba(31, 111, 122, 0.22);
+  --atmosphere-2: rgba(15, 70, 90, 0.14);
+  --atmosphere-base: linear-gradient(165deg, #dfeaf0 0%, #edf3f6 42%, #e6eef2 100%);
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --ink: #e6eef1;
+  --ink-soft: #b7c5cc;
+  --muted: #8fa0a9;
+  --paper: #0f1a1e;
+  --leaf: #4db3bf;
+  --leaf-deep: #7fd0d8;
+  --accent: #4db3bf;
+  --accent-soft: rgba(77, 179, 191, 0.18);
+  --line: rgba(230, 238, 241, 0.12);
+  --glow: rgba(77, 179, 191, 0.22);
+  --surface: rgba(20, 34, 40, 0.78);
+  --surface-strong: rgba(24, 40, 46, 0.92);
+  --chip-hover: rgba(255, 255, 255, 0.06);
+  --gate-veil: rgba(12, 20, 24, 0.94);
+  --install-btn-bg: #e8f4f5;
+  --atmosphere-1: rgba(77, 179, 191, 0.14);
+  --atmosphere-2: rgba(30, 90, 100, 0.22);
+  --atmosphere-base: linear-gradient(165deg, #0c1519 0%, #0f1a1e 45%, #122226 100%);
+  color-scheme: dark;
 }
 
 *,
@@ -31,6 +62,7 @@ body {
   color: var(--ink);
   background: var(--paper);
   line-height: 1.45;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body.has-install-banner {
@@ -63,7 +95,7 @@ body.has-install-banner {
   padding: 0.55rem 1.15rem;
   border: none;
   border-radius: 999px;
-  background: #fff;
+  background: var(--install-btn-bg);
   color: var(--leaf-deep);
   font: inherit;
   font-size: 0.92rem;
@@ -114,9 +146,10 @@ body.has-install-banner {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 80% 55% at 12% -10%, rgba(31, 111, 122, 0.22), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 95% 8%, rgba(15, 70, 90, 0.14), transparent 50%),
-    linear-gradient(165deg, #dfeaf0 0%, #edf3f6 42%, #e6eef2 100%);
+    radial-gradient(ellipse 80% 55% at 12% -10%, var(--atmosphere-1), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 95% 8%, var(--atmosphere-2), transparent 50%),
+    var(--atmosphere-base);
+  transition: opacity 0.25s ease;
 }
 
 .atmosphere::after {
@@ -276,7 +309,7 @@ body.has-install-banner {
   padding: 0.55rem 1.05rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--surface);
   color: var(--ink-soft);
   font: inherit;
   font-size: 0.92rem;
@@ -299,6 +332,57 @@ body.has-install-banner {
   color: #fff;
 }
 
+.theme-toggle {
+  margin-left: auto;
+  display: inline-grid;
+  place-items: center;
+  width: 2.55rem;
+  height: 2.55rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--leaf);
+  color: var(--leaf-deep);
+}
+
+.theme-toggle:active {
+  transform: scale(0.96);
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-icon-moon svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+html[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+html:not([data-theme="dark"]) .theme-icon-sun {
+  display: none;
+}
+
 .view[hidden] {
   display: none;
 }
@@ -311,8 +395,8 @@ body.has-install-banner {
   place-items: center;
   padding: 1.5rem;
   background:
-    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(31, 111, 122, 0.28), transparent 55%),
-    rgba(237, 243, 246, 0.92);
+    radial-gradient(ellipse 70% 50% at 20% 10%, var(--atmosphere-1), transparent 55%),
+    var(--gate-veil);
   backdrop-filter: blur(10px);
   animation: fade-in 0.35s ease both;
 }
@@ -362,7 +446,7 @@ body.has-install-banner {
   padding: 0.95rem 1.15rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--surface-strong);
   font: inherit;
   font-size: 1.05rem;
   text-align: center;
@@ -442,7 +526,7 @@ main {
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--surface);
   backdrop-filter: blur(8px);
   color: var(--ink-soft);
   font: inherit;
@@ -485,7 +569,7 @@ main {
   min-width: 1.35rem;
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
-  background: rgba(21, 32, 40, 0.08);
+  background: var(--accent-soft);
   font-size: 0.78rem;
   font-weight: 700;
   text-align: center;
@@ -511,7 +595,7 @@ main {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--surface);
   color: var(--muted);
   cursor: pointer;
   transition:
@@ -565,7 +649,7 @@ main {
   padding: 0.9rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--surface);
   backdrop-filter: blur(8px);
   font: inherit;
   font-size: 1rem;
@@ -675,7 +759,7 @@ main {
 
 .word-chip:hover,
 .word-chip:focus-visible {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--chip-hover);
   border-color: var(--line);
   outline: none;
 }
@@ -923,7 +1007,14 @@ main {
   }
 }
 
-@media (max-width: 560px) {
+  .site-nav {
+    flex-wrap: wrap;
+  }
+
+  .theme-toggle {
+    margin-left: 0;
+  }
+
   .sentence-top {
     flex-direction: column;
     align-items: stretch;
