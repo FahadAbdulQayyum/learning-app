@@ -1,5 +1,16 @@
 (() => {
   const BATCH_SIZE = 8;
+  function motion() {
+    return window.LautMotion || null;
+  }
+
+  if (window.Motion) {
+    document.documentElement.classList.add("js-motion");
+  }
+
+  function afterPaint(fn) {
+    requestAnimationFrame(() => requestAnimationFrame(fn));
+  }
   const NAME_KEY = "laut-learner-name";
   const FAV_KEY = "laut-favourite-ids";
   const VOICE_KEY = "laut-voice-gender";
@@ -272,11 +283,15 @@
     }
 
     function setOpen(open) {
-      panel.hidden = !open;
       fab.setAttribute("aria-expanded", open ? "true" : "false");
       if (open) {
+        const m = motion();
+        if (m) m.openPanel(panel);
+        else panel.hidden = false;
         pickGermanVoice();
         syncOptions();
+      } else {
+        panel.hidden = true;
       }
     }
 
@@ -344,6 +359,8 @@
       revealBtn.hidden = false;
       modal.hidden = false;
       document.body.classList.add("is-gated");
+      const sheet = modal.querySelector(".quiz-modal-card") || modal.firstElementChild;
+      afterPaint(() => motion()?.popIn(sheet));
     }
 
     function closeQuizModal() {
@@ -731,15 +748,23 @@
     setLoading(true);
 
     const batch = queue.splice(0, BATCH_SIZE);
+    const added = [];
     batch.forEach((sentence) => {
-      listEl.append(renderSentence(sentence, renderedCount));
+      const node = renderSentence(sentence, renderedCount);
+      listEl.append(node);
+      added.push(node);
       renderedCount += 1;
     });
 
     emptyEl.hidden = renderedCount > 0;
     setLoading(false);
 
-    requestAnimationFrame(() => {
+    afterPaint(() => {
+      const m = motion();
+      if (m) {
+        m.enterElements(added, { staggerEach: 0.04, y: 14 });
+        m.refresh(listEl);
+      }
       if (sentinelEl.getBoundingClientRect().top < window.innerHeight + 120) {
         loadMore();
       }
@@ -830,6 +855,11 @@
           el.classList.toggle("is-active", active);
         });
 
+        afterPaint(() => {
+          const activeView = views[view];
+          if (activeView) motion()?.popIn(activeView);
+        });
+
         if (view === "stories") showStoriesList();
         if (view === "vocabulary") showVocabList();
         if (view === "grammar") showGrammarList();
@@ -916,6 +946,13 @@
         `;
         card.addEventListener("click", () => openVocabSection(section.id, q));
         cardsHost.append(card);
+      });
+
+      afterPaint(() => {
+        const m = motion();
+        if (!m) return;
+        m.enterList(cardsHost, ".story-card");
+        m.refresh(cardsHost);
       });
     };
 
@@ -1021,6 +1058,13 @@
 
     readerEl.append(backBtn, header, playAllBtn, legend, grid);
     readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterElements([header, playAllBtn, legend], { staggerEach: 0.05, y: 12 });
+      m.enterList(grid, ".vocab-chip");
+      m.refresh(readerEl);
+    });
   }
 
   /**
@@ -1130,6 +1174,13 @@
         card.addEventListener("click", () => openGrammarSection(section.id));
         cardsHost.append(card);
       });
+
+      afterPaint(() => {
+        const m = motion();
+        if (!m) return;
+        m.enterList(cardsHost, ".story-card");
+        m.refresh(cardsHost);
+      });
     };
 
     filters.querySelectorAll(".grammar-filter").forEach((btn) => {
@@ -1143,6 +1194,7 @@
     });
 
     paintCards();
+    afterPaint(() => motion()?.refresh(filters));
   }
 
   /** @param {string} sectionId */
@@ -1232,6 +1284,12 @@
     });
 
     readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterList(readerEl, ".grammar-example, .story-paragraph");
+      m.refresh(readerEl);
+    });
   }
 
   function showStoriesList() {
@@ -1267,6 +1325,13 @@
       `;
       card.addEventListener("click", () => openStory(story.id));
       listElStories.append(card);
+    });
+
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterList(listElStories, ".story-card");
+      m.refresh(listElStories);
     });
   }
 
@@ -1355,6 +1420,13 @@
     });
 
     readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterElements([header, playAllBtn], { staggerEach: 0.05, y: 12 });
+      m.enterList(readerEl, ".story-paragraph");
+      m.refresh(readerEl);
+    });
   }
 })();
 
@@ -1382,6 +1454,11 @@ function initInstallBanner() {
   function showBanner() {
     bannerEl.hidden = false;
     document.body.classList.add("has-install-banner");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (window.LautMotion) window.LautMotion.popIn(bannerEl);
+      });
+    });
   }
 
   function hideBanner() {

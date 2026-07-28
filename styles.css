@@ -55,6 +55,21 @@ html {
   scroll-behavior: smooth;
 }
 
+html.js-motion .sentence,
+html.js-motion .story-card,
+html.js-motion .grammar-example,
+html.js-motion .story-paragraph,
+html.js-motion .thanks,
+html.js-motion .slogan,
+html.js-motion .welcome,
+html.js-motion .tagline,
+html.js-motion .site-nav,
+html.js-motion .toolbar,
+html.js-motion .install-banner,
+html.js-motion .voice-panel {
+  animation: none;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -440,14 +455,26 @@ body.has-install-banner .voice-settings {
 
 .brand-letter {
   display: inline-block;
+  will-change: transform, opacity, filter;
+  transform-origin: 50% 80%;
+}
+
+html:not(.js-motion) .brand-letter {
   opacity: 0;
   transform: translateY(0.55em) scale(0.86);
   filter: blur(10px);
-  will-change: transform, opacity, filter;
   animation:
     brand-in 0.85s cubic-bezier(0.22, 1.35, 0.36, 1) calc(var(--i) * 0.09s) both,
     brand-float 4.2s ease-in-out calc(0.95s + var(--i) * 0.12s) infinite;
-  transform-origin: 50% 80%;
+}
+
+html.js-motion .brand-letter {
+  opacity: 1;
+  filter: none;
+}
+
+html.js-motion .brand-letter:hover {
+  animation: none;
 }
 
 .brand-letter:hover {
