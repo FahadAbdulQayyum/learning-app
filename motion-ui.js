@@ -79,7 +79,7 @@
     );
   }
 
-  function enterList(container, selector = ".sentence, .story-card, .vocab-chip, .grammar-example, .story-paragraph") {
+  function enterList(container, selector = ".sentence, .story-card, .vocab-chip, .grammar-example, .story-paragraph, .verb-tense-card") {
     if (!container) return;
     const items = container.querySelectorAll(selector);
     enterElements(items, { staggerEach: 0.045, y: 16 });
@@ -109,7 +109,7 @@
   function bindPressable(root = document) {
     if (reduced || !press) return;
     const selector =
-      ".word-chip, .vocab-chip, .nav-btn, .play-sentence, .favourite-btn, .story-card, .voice-fab, .grammar-filter, .favourites-toggle";
+      ".word-chip, .vocab-chip, .nav-btn, .play-sentence, .favourite-btn, .story-card, .voice-fab, .grammar-filter, .favourites-toggle, .verb-tense-row, .verb-infinitive";
     root.querySelectorAll(selector).forEach((el) => {
       if (el.dataset.motionBound) return;
       el.dataset.motionBound = "1";

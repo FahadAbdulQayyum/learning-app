@@ -1345,6 +1345,140 @@ main {
   margin-top: 0.5rem;
 }
 
+.verb-tense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 0.35rem;
+}
+
+.verb-tense-card {
+  padding: 1rem 1.05rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.verb-tense-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.verb-tense-titles {
+  min-width: 0;
+}
+
+.verb-infinitive {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--leaf-deep);
+  cursor: pointer;
+  text-align: left;
+}
+
+.verb-infinitive:hover,
+.verb-infinitive:focus-visible {
+  color: var(--leaf);
+}
+
+.verb-tense-en {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.verb-tense-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.verb-tense-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.verb-tense-row:hover,
+.verb-tense-row:focus-visible {
+  border-color: var(--line);
+  transform: translateY(-1px);
+}
+
+.verb-tense-row--present {
+  background: color-mix(in srgb, #2f9a5b 10%, var(--surface));
+}
+
+.verb-tense-row--past {
+  background: color-mix(in srgb, #c47a2c 10%, var(--surface));
+}
+
+.verb-tense-row--future {
+  background: color-mix(in srgb, #2f6fed 10%, var(--surface));
+}
+
+.verb-tense-form {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.verb-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+}
+
+.verb-related-chip {
+  min-height: 0;
+  padding: 0.55rem 0.7rem;
+}
+
+.tense-legend-present strong {
+  color: #2f9a5b;
+}
+
+.tense-legend-past strong {
+  color: #c47a2c;
+}
+
+.tense-legend-future strong {
+  color: #2f6fed;
+}
+
+html[data-theme="dark"] .tense-legend-present strong {
+  color: #5fd492;
+}
+
+html[data-theme="dark"] .tense-legend-past strong {
+  color: #e0a45a;
+}
+
+html[data-theme="dark"] .tense-legend-future strong {
+  color: #7aa6ff;
+}
+
 .gender-legend {
   display: flex;
   flex-wrap: wrap;
@@ -1489,7 +1623,8 @@ html[data-theme="dark"] .vocab-chip--das {
 }
 
 .vocab-article {
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
 .vocab-chip-en {

@@ -925,7 +925,12 @@
       const sections = VOCAB_SECTIONS.filter((section) => {
         if (!q) return true;
         const hay = `${section.title} ${section.titleEn} ${section.description} ${section.words
-          .map((w) => `${w.de} ${w.en} ${w.note || ""}`)
+          .map((w) => {
+            const related = "related" in w && Array.isArray(w.related)
+              ? w.related.map((r) => `${r.de} ${r.en} ${r.note || ""}`).join(" ")
+              : "";
+            return `${w.de} ${w.en} ${w.note || ""} ${w.present || ""} ${w.past || ""} ${w.future || ""} ${related}`;
+          })
           .join(" ")}`.toLowerCase();
         return hay.includes(q);
       });
@@ -943,8 +948,9 @@
         card.type = "button";
         card.className = "story-card vocab-card";
         card.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
+        const countLabel = section.kind === "verbs" ? "verbs" : "words";
         card.innerHTML = `
-          <span class="story-card-meta">${section.words.length} words</span>
+          <span class="story-card-meta">${section.words.length} ${countLabel}</span>
           <span class="story-card-title-en">${section.titleEn}</span>
           <span class="story-card-title vocab-card-title-de">${section.title}</span>
           <span class="story-card-excerpt">${section.description}</span>
@@ -981,8 +987,17 @@
 
     const q = filterQuery.trim().toLowerCase();
     const words = q
-      ? section.words.filter((w) => `${w.de} ${w.en} ${w.note || ""}`.toLowerCase().includes(q))
+      ? section.words.filter((w) => {
+          const related = "related" in w && Array.isArray(w.related)
+            ? w.related.map((r) => `${r.de} ${r.en} ${r.note || ""}`).join(" ")
+            : "";
+          return `${w.de} ${w.en} ${w.note || ""} ${w.present || ""} ${w.past || ""} ${w.future || ""} ${related}`
+            .toLowerCase()
+            .includes(q);
+        })
       : section.words.slice();
+
+    const isVerbs = section.kind === "verbs";
 
     const backBtn = document.createElement("button");
     backBtn.type = "button";
@@ -993,7 +1008,7 @@
     const header = document.createElement("header");
     header.className = "story-header vocab-header";
     header.innerHTML = `
-      <p class="story-meta">${words.length} words</p>
+      <p class="story-meta">${words.length} ${isVerbs ? "verbs" : "words"}</p>
       <h2 class="story-title-en vocab-title-en">${section.titleEn}</h2>
       <button type="button" class="vocab-title-de" aria-label="Pronounce ${section.title}">${section.title}</button>
       <p class="vocab-section-desc">${section.description}</p>
@@ -1007,7 +1022,7 @@
     const playAllBtn = document.createElement("button");
     playAllBtn.type = "button";
     playAllBtn.className = "play-sentence story-play-all";
-    playAllBtn.innerHTML = `${playIcon}<span>Play all words</span>`;
+    playAllBtn.innerHTML = `${playIcon}<span>${isVerbs ? "Play all infinitives" : "Play all words"}</span>`;
     playAllBtn.addEventListener("click", () => {
       const fullText = words.map((w) => w.de).join(", ");
       speak(fullText, null, playAllBtn, { soft: true });
@@ -1015,23 +1030,50 @@
 
     const legend = document.createElement("div");
     legend.className = "gender-legend";
-    legend.setAttribute("aria-label", "Article color guide");
-    legend.innerHTML = `
+    legend.setAttribute("aria-label", isVerbs ? "Tense and article color guide" : "Article color guide");
+    legend.innerHTML = isVerbs
+      ? `
+      <span class="gender-legend-item tense-legend-present"><strong>Present</strong></span>
+      <span class="gender-legend-item tense-legend-past"><strong>Past</strong></span>
+      <span class="gender-legend-item tense-legend-future"><strong>Future</strong></span>
+      <span class="gender-legend-item gender-der"><strong>der</strong> masculine</span>
+      <span class="gender-legend-item gender-die"><strong>die</strong> feminine</span>
+      <span class="gender-legend-item gender-das"><strong>das</strong> neuter</span>
+    `
+      : `
       <span class="gender-legend-item gender-der"><strong>der</strong> masculine</span>
       <span class="gender-legend-item gender-die"><strong>die</strong> feminine</span>
       <span class="gender-legend-item gender-das"><strong>das</strong> neuter</span>
     `;
 
-    const grid = document.createElement("div");
-    grid.className = "vocab-grid";
-
     if (!words.length) {
       const empty = document.createElement("p");
       empty.className = "empty-state";
-      empty.textContent = "No words in this topic match that filter.";
+      empty.textContent = isVerbs
+        ? "No verbs in this topic match that filter."
+        : "No words in this topic match that filter.";
       readerEl.append(backBtn, header, empty);
       return;
     }
+
+    if (isVerbs) {
+      const list = document.createElement("div");
+      list.className = "verb-tense-list";
+      words.forEach((verb) => list.append(renderVerbTenseCard(verb)));
+      readerEl.append(backBtn, header, playAllBtn, legend, list);
+      readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      afterPaint(() => {
+        const m = motion();
+        if (!m) return;
+        m.enterElements([header, playAllBtn, legend], { staggerEach: 0.05, y: 12 });
+        m.enterList(list, ".verb-tense-card");
+        m.refresh(readerEl);
+      });
+      return;
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "vocab-grid";
 
     words.forEach((word) => {
       const gender = getArticleGender(word);
@@ -1070,6 +1112,100 @@
       m.enterList(grid, ".vocab-chip");
       m.refresh(readerEl);
     });
+  }
+
+  /**
+   * @param {{ de: string, en: string, present?: string, past?: string, future?: string, related?: Array<{ de: string, en: string, note?: string }> }} verb
+   */
+  function renderVerbTenseCard(verb) {
+    const card = document.createElement("article");
+    card.className = "verb-tense-card";
+
+    const top = document.createElement("div");
+    top.className = "verb-tense-top";
+
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "verb-tense-titles";
+
+    const infinitiveBtn = document.createElement("button");
+    infinitiveBtn.type = "button";
+    infinitiveBtn.className = "verb-infinitive";
+    infinitiveBtn.textContent = verb.de;
+    infinitiveBtn.setAttribute("aria-label", `Pronounce ${verb.de}`);
+    infinitiveBtn.addEventListener("click", () => speak(verb.de, infinitiveBtn, null, { soft: true }));
+
+    const meaning = document.createElement("p");
+    meaning.className = "verb-tense-en";
+    meaning.textContent = verb.en;
+
+    titleWrap.append(infinitiveBtn, meaning);
+
+    const playBtn = document.createElement("button");
+    playBtn.type = "button";
+    playBtn.className = "play-sentence";
+    playBtn.innerHTML = `${playIcon}<span>Play forms</span>`;
+    playBtn.addEventListener("click", () => {
+      const forms = [verb.de, verb.present, verb.past, verb.future].filter(Boolean).join(". ");
+      speak(forms, null, playBtn, { soft: true });
+    });
+
+    top.append(titleWrap, playBtn);
+
+    const forms = document.createElement("div");
+    forms.className = "verb-tense-forms";
+
+    /** @type {Array<{ key: "present" | "past" | "future", label: string, value: string | undefined }>} */
+    const rows = [
+      { key: "present", label: "Present", value: verb.present },
+      { key: "past", label: "Past", value: verb.past },
+      { key: "future", label: "Future", value: verb.future },
+    ];
+
+    rows.forEach((row) => {
+      if (!row.value) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `verb-tense-row verb-tense-row--${row.key}`;
+      btn.setAttribute("aria-label", `Pronounce ${row.label}: ${row.value}`);
+      btn.innerHTML = `
+        <span class="tense-pill tense-pill--${row.key}">${row.label}</span>
+        <span class="verb-tense-form">${row.value}</span>
+      `;
+      btn.addEventListener("click", () => speak(row.value, btn, null, { soft: true }));
+      forms.append(btn);
+    });
+
+    card.append(top, forms);
+
+    if (Array.isArray(verb.related) && verb.related.length) {
+      const related = document.createElement("div");
+      related.className = "verb-related";
+      related.setAttribute("aria-label", "Related nouns");
+
+      verb.related.forEach((word) => {
+        const gender = getArticleGender(word);
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = gender ? `vocab-chip vocab-chip--${gender} verb-related-chip` : "vocab-chip verb-related-chip";
+        chip.setAttribute("aria-label", `Pronounce ${speakable(word.de)}`);
+
+        const de = document.createElement("span");
+        de.className = "vocab-chip-de";
+        de.append(...renderGenderedWord(word.de, gender));
+
+        const en = document.createElement("span");
+        en.className = "vocab-chip-en";
+        en.textContent = word.en;
+
+        chip.append(de, en);
+        chip.addEventListener("click", () => speak(word.de, chip, null, { soft: true }));
+        related.append(chip);
+      });
+
+      card.append(related);
+    }
+
+    return card;
   }
 
   /**

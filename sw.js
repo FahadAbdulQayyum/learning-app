@@ -1,7 +1,7 @@
 /* global QUIZ_WORDS, pickQuizWord */
 importScripts("./quiz-words.js");
 
-const CACHE_NAME = "laut-v8.0.2";
+const CACHE_NAME = "laut-v8.0.3";
 const APP_SHELL = [
   "./",
   "./index.html",
