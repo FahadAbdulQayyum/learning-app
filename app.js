@@ -14,6 +14,99 @@
   const NAME_KEY = "laut-learner-name";
   const FAV_KEY = "laut-favourite-ids";
   const VOICE_KEY = "laut-voice-gender";
+  const PLACE_KEY = "laut-place-v1";
+
+  /** @type {{ view: string, route: Record<string, string>, scrolls: Record<string, number> }} */
+  let place = loadPlace();
+
+  function defaultPlace() {
+    return { view: "practice", route: {}, scrolls: {} };
+  }
+
+  function loadPlace() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(PLACE_KEY) || "null");
+      if (!raw || typeof raw !== "object") return defaultPlace();
+      return {
+        view: typeof raw.view === "string" ? raw.view : "practice",
+        route: raw.route && typeof raw.route === "object" ? raw.route : {},
+        scrolls: raw.scrolls && typeof raw.scrolls === "object" ? raw.scrolls : {},
+      };
+    } catch {
+      return defaultPlace();
+    }
+  }
+
+  function savePlace() {
+    try {
+      localStorage.setItem(PLACE_KEY, JSON.stringify(place));
+    } catch {
+      /* ignore quota */
+    }
+  }
+
+  function getScrollY() {
+    return window.scrollY || document.documentElement.scrollTop || 0;
+  }
+
+  /** @param {string} key */
+  function captureScroll(key) {
+    place.scrolls[key] = getScrollY();
+    savePlace();
+  }
+
+  /** @param {string} key */
+  function restoreScroll(key) {
+    const y = Number(place.scrolls[key] || 0);
+    afterPaint(() => {
+      window.scrollTo({ top: y, left: 0, behavior: "auto" });
+      // Second pass after layout settles (dynamic lists)
+      requestAnimationFrame(() => window.scrollTo({ top: y, left: 0, behavior: "auto" }));
+    });
+  }
+
+  /**
+   * @param {string} view
+   * @param {Record<string, string>} [route]
+   */
+  function rememberPlace(view, route) {
+    place.view = view;
+    if (route) place.route = route;
+    savePlace();
+  }
+
+  /** Debounced scroll capture for the active list screen */
+  let scrollSaveTimer = 0;
+  window.addEventListener(
+    "scroll",
+    () => {
+      window.clearTimeout(scrollSaveTimer);
+      scrollSaveTimer = window.setTimeout(() => {
+        const key = activeScrollKey();
+        if (!key) return;
+        place.scrolls[key] = getScrollY();
+        savePlace();
+      }, 180);
+    },
+    { passive: true }
+  );
+
+  function activeScrollKey() {
+    const route = place.route || {};
+    if (route.screen === "learn-focus") return null;
+    if (route.screen === "learn-level") return "learn-level";
+    if (route.screen === "personal-section") return null;
+    if (route.screen === "vocab-section") return null;
+    if (route.screen === "grammar-section") return null;
+    if (route.screen === "story") return null;
+    if (route.screen === "learn-list" || place.view === "learn") return "learn-list";
+    if (route.screen === "personal-list" || place.view === "personal") return "personal-list";
+    if (route.screen === "vocabulary-list" || place.view === "vocabulary") return "vocab-list";
+    if (route.screen === "grammar-list" || place.view === "grammar") return "grammar-list";
+    if (route.screen === "stories-list" || place.view === "stories") return "stories-list";
+    if (place.view === "practice") return "practice";
+    return null;
+  }
 
   const versionEl = document.getElementById("app-version");
   if (versionEl && window.LAUT_VERSION) {
@@ -825,6 +918,7 @@
   initPersonal();
   initLearn();
   initViewNav();
+  restorePlace();
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -847,35 +941,110 @@
     };
     const navButtons = document.querySelectorAll(".nav-btn[data-view]");
 
+    /**
+     * @param {string} view
+     * @param {{ skipListReset?: boolean, skipMotion?: boolean }} [opts]
+     */
+    function activateView(view, opts = {}) {
+      const prevKey = activeScrollKey();
+      if (prevKey) captureScroll(prevKey);
+
+      navButtons.forEach((other) => {
+        const active = other.getAttribute("data-view") === view;
+        other.classList.toggle("is-active", active);
+        other.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+
+      Object.entries(views).forEach(([name, el]) => {
+        if (!el) return;
+        const active = name === view;
+        el.hidden = !active;
+        el.classList.toggle("is-active", active);
+      });
+
+      if (!opts.skipListReset) {
+        rememberPlace(view, { screen: `${view}-list` });
+      } else {
+        rememberPlace(view);
+      }
+
+      afterPaint(() => {
+        const activeView = views[view];
+        if (activeView && !opts.skipMotion) motion()?.popIn(activeView);
+      });
+
+      if (!opts.skipListReset) {
+        if (view === "learn") showLearnList({ restoreScroll: true });
+        if (view === "stories") showStoriesList({ restoreScroll: true });
+        if (view === "vocabulary") showVocabList({ restoreScroll: true });
+        if (view === "grammar") showGrammarList({ restoreScroll: true });
+        if (view === "personal") showPersonalList({ restoreScroll: true });
+        if (view === "practice") restoreScroll("practice");
+      }
+    }
+
     navButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const view = btn.getAttribute("data-view");
-
-        navButtons.forEach((other) => {
-          const active = other === btn;
-          other.classList.toggle("is-active", active);
-          other.setAttribute("aria-pressed", active ? "true" : "false");
-        });
-
-        Object.entries(views).forEach(([name, el]) => {
-          if (!el) return;
-          const active = name === view;
-          el.hidden = !active;
-          el.classList.toggle("is-active", active);
-        });
-
-        afterPaint(() => {
-          const activeView = views[view];
-          if (activeView) motion()?.popIn(activeView);
-        });
-
-        if (view === "learn") showLearnList();
-        if (view === "stories") showStoriesList();
-        if (view === "vocabulary") showVocabList();
-        if (view === "grammar") showGrammarList();
-        if (view === "personal") showPersonalList();
+        if (!view) return;
+        activateView(view);
       });
     });
+
+    window.__lautActivateView = activateView;
+  }
+
+  /** Resume last tab / subsection and scroll position after reload. */
+  function restorePlace() {
+    const activate = window.__lautActivateView;
+    if (!activate) return;
+
+    const view = place.view || "practice";
+    const route = place.route || {};
+    const screen = route.screen || `${view}-list`;
+    const deepScreens = new Set([
+      "learn-level",
+      "learn-focus",
+      "personal-section",
+      "vocab-section",
+      "grammar-section",
+      "story",
+    ]);
+    const isDeep = deepScreens.has(screen);
+
+    activate(view, { skipListReset: isDeep, skipMotion: true });
+
+    if (screen === "learn-focus" && route.levelId && route.focusId) {
+      openLearnFocus(route.levelId, route.focusId);
+      return;
+    }
+    if (screen === "learn-level" && route.levelId) {
+      openLearnLevel(route.levelId, { fromList: false, restoreScroll: true });
+      return;
+    }
+    if (screen === "personal-section" && route.sectionId) {
+      openPersonalSection(route.sectionId, route.filterQuery || "");
+      return;
+    }
+    if (screen === "vocab-section" && route.sectionId) {
+      openVocabSection(route.sectionId, route.filterQuery || "");
+      return;
+    }
+    if (screen === "grammar-section" && route.sectionId) {
+      openGrammarSection(route.sectionId);
+      return;
+    }
+    if (screen === "story" && route.storyId) {
+      openStory(route.storyId);
+      return;
+    }
+
+    if (view === "practice") restoreScroll("practice");
+    else if (view === "learn") restoreScroll("learn-list");
+    else if (view === "personal") restoreScroll("personal-list");
+    else if (view === "vocabulary") restoreScroll("vocab-list");
+    else if (view === "grammar") restoreScroll("grammar-list");
+    else if (view === "stories") restoreScroll("stories-list");
   }
 
   function initLearn() {
@@ -884,13 +1053,15 @@
     renderLearnList();
   }
 
-  function showLearnList() {
+  function showLearnList(opts = {}) {
     const listEl = document.getElementById("learn-list");
     const readerEl = document.getElementById("learn-reader");
     if (!listEl || !readerEl) return;
     listEl.hidden = false;
     readerEl.hidden = true;
     readerEl.replaceChildren();
+    rememberPlace("learn", { screen: "learn-list" });
+    if (opts.restoreScroll) restoreScroll("learn-list");
   }
 
   function renderLearnList() {
@@ -956,22 +1127,28 @@
     });
   }
 
-  /** @param {string} levelId */
-  function openLearnLevel(levelId) {
+  /** @param {string} levelId @param {{ restoreScroll?: boolean, fromList?: boolean }} [opts] */
+  function openLearnLevel(levelId, opts = {}) {
     const level = LEARN_LEVELS.find((item) => item.id === levelId);
     if (!level) return;
+
+    if (opts.fromList !== false && !opts.restoreScroll) {
+      const learnList = document.getElementById("learn-list");
+      if (learnList && !learnList.hidden) captureScroll("learn-list");
+    }
 
     const listEl = document.getElementById("learn-list");
     const readerEl = document.getElementById("learn-reader");
     listEl.hidden = true;
     readerEl.hidden = false;
     readerEl.replaceChildren();
+    rememberPlace("learn", { screen: "learn-level", levelId });
 
     const backBtn = document.createElement("button");
     backBtn.type = "button";
     backBtn.className = "story-back";
     backBtn.textContent = "← All levels";
-    backBtn.addEventListener("click", showLearnList);
+    backBtn.addEventListener("click", () => showLearnList({ restoreScroll: true }));
 
     const header = document.createElement("header");
     header.className = "story-header learn-header";
@@ -1060,7 +1237,11 @@
     });
     readerEl.append(phraseList);
 
-    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (opts.restoreScroll) {
+      restoreScroll("learn-level");
+    } else {
+      readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     afterPaint(() => {
       const m = motion();
       if (!m) return;
@@ -1080,17 +1261,24 @@
       typeof LEARN_FOCUS_TOPICS !== "undefined" ? LEARN_FOCUS_TOPICS[focusId] : null;
     if (!level || !topic) return;
 
+    if (place.route?.screen === "learn-level") {
+      captureScroll("learn-level");
+    }
+
     const listEl = document.getElementById("learn-list");
     const readerEl = document.getElementById("learn-reader");
     listEl.hidden = true;
     readerEl.hidden = false;
     readerEl.replaceChildren();
+    rememberPlace("learn", { screen: "learn-focus", levelId, focusId });
 
     const backBtn = document.createElement("button");
     backBtn.type = "button";
     backBtn.className = "story-back";
     backBtn.textContent = `← Back to ${level.code}`;
-    backBtn.addEventListener("click", () => openLearnLevel(levelId));
+    backBtn.addEventListener("click", () =>
+      openLearnLevel(levelId, { fromList: false, restoreScroll: true })
+    );
 
     const header = document.createElement("header");
     header.className = "story-header learn-header";
@@ -1224,13 +1412,15 @@
     renderPersonalList();
   }
 
-  function showPersonalList() {
+  function showPersonalList(opts = {}) {
     const listEl = document.getElementById("personal-list");
     const readerEl = document.getElementById("personal-reader");
     if (!listEl || !readerEl) return;
     listEl.hidden = false;
     readerEl.hidden = true;
     readerEl.replaceChildren();
+    rememberPlace("personal", { screen: "personal-list" });
+    if (opts.restoreScroll) restoreScroll("personal-list");
   }
 
   function personalSectionSearchText(section) {
@@ -1337,9 +1527,15 @@
 
     const listEl = document.getElementById("personal-list");
     const readerEl = document.getElementById("personal-reader");
+    if (listEl && !listEl.hidden) captureScroll("personal-list");
     listEl.hidden = true;
     readerEl.hidden = false;
     readerEl.replaceChildren();
+    rememberPlace("personal", {
+      screen: "personal-section",
+      sectionId,
+      filterQuery: filterQuery || "",
+    });
 
     const q = filterQuery.trim().toLowerCase();
     const matchText = (parts) => !q || parts.join(" ").toLowerCase().includes(q);
@@ -1356,7 +1552,7 @@
     backBtn.type = "button";
     backBtn.className = "story-back";
     backBtn.textContent = "← All personal notes";
-    backBtn.addEventListener("click", showPersonalList);
+    backBtn.addEventListener("click", () => showPersonalList({ restoreScroll: true }));
 
     const header = document.createElement("header");
     header.className = "story-header vocab-header";
@@ -1537,12 +1733,14 @@
     renderVocabList();
   }
 
-  function showVocabList() {
+  function showVocabList(opts = {}) {
     const listEl = document.getElementById("vocab-list");
     const readerEl = document.getElementById("vocab-reader");
     listEl.hidden = false;
     readerEl.hidden = true;
     readerEl.replaceChildren();
+    rememberPlace("vocabulary", { screen: "vocabulary-list" });
+    if (opts.restoreScroll) restoreScroll("vocab-list");
   }
 
   function renderVocabList() {
@@ -1634,9 +1832,15 @@
 
     const listEl = document.getElementById("vocab-list");
     const readerEl = document.getElementById("vocab-reader");
+    if (listEl && !listEl.hidden) captureScroll("vocab-list");
     listEl.hidden = true;
     readerEl.hidden = false;
     readerEl.replaceChildren();
+    rememberPlace("vocabulary", {
+      screen: "vocab-section",
+      sectionId,
+      filterQuery: filterQuery || "",
+    });
 
     const q = filterQuery.trim().toLowerCase();
     const words = q
@@ -1656,7 +1860,7 @@
     backBtn.type = "button";
     backBtn.className = "story-back";
     backBtn.textContent = "← All vocabulary";
-    backBtn.addEventListener("click", showVocabList);
+    backBtn.addEventListener("click", () => showVocabList({ restoreScroll: true }));
 
     const header = document.createElement("header");
     header.className = "story-header vocab-header";
@@ -1893,12 +2097,14 @@
     return [article, document.createTextNode(match[2] + match[3])];
   }
 
-  function showGrammarList() {
+  function showGrammarList(opts = {}) {
     const listEl = document.getElementById("grammar-list");
     const readerEl = document.getElementById("grammar-reader");
     listEl.hidden = false;
     readerEl.hidden = true;
     readerEl.replaceChildren();
+    rememberPlace("grammar", { screen: "grammar-list" });
+    if (opts.restoreScroll) restoreScroll("grammar-list");
   }
 
   function initGrammar() {
@@ -1998,15 +2204,17 @@
 
     const listEl = document.getElementById("grammar-list");
     const readerEl = document.getElementById("grammar-reader");
+    if (listEl && !listEl.hidden) captureScroll("grammar-list");
     listEl.hidden = true;
     readerEl.hidden = false;
     readerEl.replaceChildren();
+    rememberPlace("grammar", { screen: "grammar-section", sectionId });
 
     const backBtn = document.createElement("button");
     backBtn.type = "button";
     backBtn.className = "story-back";
     backBtn.textContent = "← All grammar";
-    backBtn.addEventListener("click", showGrammarList);
+    backBtn.addEventListener("click", () => showGrammarList({ restoreScroll: true }));
 
     const header = document.createElement("header");
     header.className = "story-header vocab-header";
@@ -2086,12 +2294,14 @@
     });
   }
 
-  function showStoriesList() {
+  function showStoriesList(opts = {}) {
     const listElStories = document.getElementById("stories-list");
     const readerEl = document.getElementById("story-reader");
     listElStories.hidden = false;
     readerEl.hidden = true;
     readerEl.replaceChildren();
+    rememberPlace("stories", { screen: "stories-list" });
+    if (opts.restoreScroll) restoreScroll("stories-list");
   }
 
   function renderStoriesList() {
@@ -2136,15 +2346,17 @@
 
     const listElStories = document.getElementById("stories-list");
     const readerEl = document.getElementById("story-reader");
+    if (listElStories && !listElStories.hidden) captureScroll("stories-list");
     listElStories.hidden = true;
     readerEl.hidden = false;
     readerEl.replaceChildren();
+    rememberPlace("stories", { screen: "story", storyId });
 
     const backBtn = document.createElement("button");
     backBtn.type = "button";
     backBtn.className = "story-back";
     backBtn.textContent = "← All stories";
-    backBtn.addEventListener("click", showStoriesList);
+    backBtn.addEventListener("click", () => showStoriesList({ restoreScroll: true }));
 
     const header = document.createElement("header");
     header.className = "story-header";
