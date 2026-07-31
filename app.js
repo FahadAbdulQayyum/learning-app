@@ -1448,6 +1448,13 @@
     btn.className = exampleStyle ? "personal-pair personal-pair--example" : "personal-pair";
     btn.setAttribute("aria-label", `Pronounce ${speakable(pair.de)}`);
 
+    if (pair.note) {
+      const note = document.createElement("span");
+      note.className = "personal-pair-note";
+      note.textContent = pair.note;
+      btn.append(note);
+    }
+
     if (pair.en) {
       const en = document.createElement("span");
       en.className = "personal-pair-en";
@@ -1465,13 +1472,6 @@
       de.textContent = pair.de;
     }
     btn.append(de);
-
-    if (pair.note) {
-      const note = document.createElement("span");
-      note.className = "personal-pair-note";
-      note.textContent = pair.note;
-      btn.append(note);
-    }
 
     btn.addEventListener("click", () => speak(pair.de, btn, null, { soft: true }));
     return btn;

@@ -1949,8 +1949,16 @@ html[data-theme="dark"] .tense-pill--future {
 }
 
 .personal-pair-note {
-  font-size: 0.78rem;
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--leaf) 8%, var(--surface));
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--leaf-deep);
 }
 
 .personal-table {
