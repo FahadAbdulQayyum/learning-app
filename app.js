@@ -937,7 +937,7 @@
           <span class="learn-level-title">${level.title}</span>
           <span class="learn-level-title-de">${level.titleDe}</span>
           <span class="learn-level-tagline">${level.tagline}</span>
-          <span class="learn-level-meta">${level.phrases.length} phrases · ${level.focus.length} focus areas</span>
+          <span class="learn-level-meta">${level.phrases.length} phrases · ${level.focus.length} focus topics</span>
         `;
         card.addEventListener("click", () => openLearnLevel(level.id));
         grid.append(card);
@@ -1008,13 +1008,21 @@
 
     const focus = document.createElement("section");
     focus.className = "learn-panel";
-    focus.innerHTML = `<h3 class="personal-subheading">Focus</h3>`;
+    focus.innerHTML = `<h3 class="personal-subheading">Focus <span class="learn-focus-hint">tap a topic</span></h3>`;
     const chips = document.createElement("div");
     chips.className = "learn-focus-chips";
-    level.focus.forEach((item) => {
-      const chip = document.createElement("span");
+    level.focus.forEach((focusId) => {
+      const topic =
+        typeof LEARN_FOCUS_TOPICS !== "undefined" ? LEARN_FOCUS_TOPICS[focusId] : null;
+      const chip = document.createElement("button");
+      chip.type = "button";
       chip.className = "learn-focus-chip";
-      chip.textContent = item;
+      chip.textContent = topic ? topic.title : focusId;
+      chip.setAttribute(
+        "aria-label",
+        topic ? `Open examples for ${topic.title}` : `Open ${focusId}`
+      );
+      chip.addEventListener("click", () => openLearnFocus(level.id, focusId));
       chips.append(chip);
     });
     focus.append(chips);
@@ -1060,6 +1068,154 @@
       m.enterList(phraseList, ".personal-pair");
       m.refresh(readerEl);
     });
+  }
+
+  /**
+   * @param {string} levelId
+   * @param {string} focusId
+   */
+  function openLearnFocus(levelId, focusId) {
+    const level = LEARN_LEVELS.find((item) => item.id === levelId);
+    const topic =
+      typeof LEARN_FOCUS_TOPICS !== "undefined" ? LEARN_FOCUS_TOPICS[focusId] : null;
+    if (!level || !topic) return;
+
+    const listEl = document.getElementById("learn-list");
+    const readerEl = document.getElementById("learn-reader");
+    listEl.hidden = true;
+    readerEl.hidden = false;
+    readerEl.replaceChildren();
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "story-back";
+    backBtn.textContent = `← Back to ${level.code}`;
+    backBtn.addEventListener("click", () => openLearnLevel(levelId));
+
+    const header = document.createElement("header");
+    header.className = "story-header learn-header";
+    header.innerHTML = `
+      <p class="learn-level-badge learn-level-badge--${level.code.toLowerCase()}">${level.code} · Focus</p>
+      <h2 class="story-title-en vocab-title-en">${topic.title}</h2>
+      <p class="vocab-section-desc">${topic.description}</p>
+    `;
+
+    const playAllBtn = document.createElement("button");
+    playAllBtn.type = "button";
+    playAllBtn.className = "play-sentence story-play-all learn-play-all";
+    playAllBtn.innerHTML = `${playIcon}<span>Play all examples</span>`;
+    playAllBtn.addEventListener("click", () => {
+      const storyText = (topic.story || []).map((p) => p.de).join(" ");
+      const sentText = topic.sentences.map((s) => s.text).join(". ");
+      speak(`${storyText} ${sentText}`.trim(), null, playAllBtn, { soft: true });
+    });
+
+    readerEl.append(backBtn, header, playAllBtn);
+
+    if (topic.story && topic.story.length) {
+      const storyBlock = document.createElement("section");
+      storyBlock.className = "learn-mini-story";
+      storyBlock.innerHTML = `
+        <p class="learn-mini-story-kicker">Mini story</p>
+        <h3 class="learn-mini-story-title">${topic.storyTitle}</h3>
+        <p class="learn-mini-story-title-en">${topic.storyTitleEn}</p>
+      `;
+
+      const storyPlay = document.createElement("button");
+      storyPlay.type = "button";
+      storyPlay.className = "play-sentence";
+      storyPlay.innerHTML = `${playIcon}<span>Play story</span>`;
+      storyPlay.addEventListener("click", () => {
+        speak(topic.story.map((p) => p.de).join(" "), null, storyPlay, { soft: true });
+      });
+      storyBlock.append(storyPlay);
+
+      topic.story.forEach((para, index) => {
+        storyBlock.append(renderLearnExampleSentence({
+          id: `${topic.id}-story-${index}`,
+          text: para.de,
+          meaning: para.en,
+          words: para.words,
+        }, index));
+      });
+
+      readerEl.append(storyBlock);
+    }
+
+    const examplesHeading = document.createElement("h3");
+    examplesHeading.className = "personal-subheading";
+    examplesHeading.textContent = "Example sentences";
+    readerEl.append(examplesHeading);
+
+    const feed = document.createElement("div");
+    feed.className = "learn-example-feed";
+    feed.setAttribute("role", "list");
+    topic.sentences.forEach((sentence, index) => {
+      feed.append(renderLearnExampleSentence(sentence, index));
+    });
+    readerEl.append(feed);
+
+    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterElements([header, playAllBtn], { staggerEach: 0.05, y: 12 });
+      m.enterList(readerEl, ".sentence");
+      m.refresh(readerEl);
+    });
+  }
+
+  /**
+   * Practice-style sentence card for Learn focus topics (no favourites).
+   * @param {{ id: string, text: string, meaning: string, words: Array<{ de: string, en: string }> }} sentence
+   * @param {number} index
+   */
+  function renderLearnExampleSentence(sentence, index) {
+    const article = document.createElement("article");
+    article.className = "sentence learn-example-sentence";
+    article.dataset.id = sentence.id;
+    article.role = "listitem";
+
+    const top = document.createElement("div");
+    top.className = "sentence-top";
+
+    const meaning = document.createElement("p");
+    meaning.className = "full-meaning";
+    meaning.textContent = sentence.meaning;
+
+    const playBtn = document.createElement("button");
+    playBtn.type = "button";
+    playBtn.className = "play-sentence";
+    playBtn.setAttribute("aria-label", `Play sentence: ${sentence.text}`);
+    playBtn.innerHTML = `${playIcon}<span>Play</span>`;
+    playBtn.addEventListener("click", () => speak(sentence.text, null, playBtn));
+
+    top.append(meaning, playBtn);
+
+    const words = document.createElement("div");
+    words.className = "words";
+    sentence.words.forEach((word) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "word-chip";
+      chip.setAttribute("aria-label", `Pronounce ${speakable(word.de)}`);
+
+      const de = document.createElement("span");
+      de.className = "word-de";
+      de.textContent = word.de;
+
+      const en = document.createElement("span");
+      en.className = "word-en";
+      en.textContent = word.en;
+
+      chip.append(de, en);
+      chip.addEventListener("click", () => speak(word.de, chip));
+      words.append(chip);
+    });
+
+    article.append(top, words);
+    void index;
+    return article;
   }
 
   function initPersonal() {

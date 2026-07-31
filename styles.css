@@ -2183,9 +2183,77 @@ html[data-theme="dark"] .tense-pill--future {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--premium) 35%, var(--line));
   background: color-mix(in srgb, var(--premium) 10%, var(--surface));
+  font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--premium-deep);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.learn-focus-chip:hover,
+.learn-focus-chip:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--premium);
+  background: color-mix(in srgb, var(--premium) 22%, var(--surface));
+}
+
+.learn-focus-hint {
+  margin-left: 0.45rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.learn-mini-story {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 1.05rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--premium) 30%, var(--line));
+  border-radius: 16px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--premium) 12%, var(--surface)) 0%,
+    var(--surface) 70%
+  );
+}
+
+.learn-mini-story-kicker {
+  margin: 0 0 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--premium-deep);
+}
+
+.learn-mini-story-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--leaf-deep);
+}
+
+.learn-mini-story-title-en {
+  margin: 0.15rem 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.learn-mini-story .sentence {
+  margin-top: 0.65rem;
+}
+
+.learn-example-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.learn-example-sentence {
+  margin: 0;
 }
 
 html[data-theme="dark"] .learn-level-card--c2 .learn-level-code,

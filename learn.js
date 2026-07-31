@@ -15,6 +15,8 @@
  *   grammar: string[],
  *   tips: string[]
  * }} LearnLevel
+ *
+ * focus entries are ids into LEARN_FOCUS_TOPICS (see learn-focus.js).
  */
 
 /** @type {LearnLevel[]} */
@@ -33,7 +35,7 @@ const LEARN_LEVELS = [
       "Order food and ask for prices",
       "Understand slow, clear speech about yourself",
     ],
-    focus: ["Greetings", "Numbers & time", "sein / haben", "Nominative basics"],
+    focus: ["greetings", "numbers-time", "sein-haben", "nominative-basics"],
     grammar: [
       "Verb second position in statements",
       "Present tense of regular verbs + sein / haben",
@@ -76,7 +78,7 @@ const LEARN_LEVELS = [
       "Make simple plans and appointments",
       "Tell a short story about yesterday",
     ],
-    focus: ["Daily routines", "Shopping", "Modal verbs", "Perfekt intro"],
+    focus: ["daily-routines", "shopping", "modal-verbs", "perfekt-intro"],
     grammar: [
       "Modal verbs: können, müssen, wollen, möchten",
       "Accusative: den / einen / mich / dich",
@@ -119,7 +121,7 @@ const LEARN_LEVELS = [
       "Describe experiences and hopes",
       "Follow clear standard speech on familiar topics",
     ],
-    focus: ["Opinions", "Travel & work", "weil / dass", "Dative"],
+    focus: ["opinions", "travel-work", "weil-dass", "dative"],
     grammar: [
       "Subordinate clauses: weil, dass, wenn (verb at end)",
       "Dative: mir, dir, dem, der, den (pl)",
@@ -162,7 +164,7 @@ const LEARN_LEVELS = [
       "Write clear, detailed texts on your field",
       "Understand most TV news and films",
     ],
-    focus: ["Debate language", "Passive", "Konjunktiv II", "Relativsätze"],
+    focus: ["debate", "passive", "konjunktiv-ii", "relativsaetze"],
     grammar: [
       "Relative clauses: der/die/das, dem/deren…",
       "Passive voice: werden + Partizip II",
@@ -205,7 +207,7 @@ const LEARN_LEVELS = [
       "Use language flexibly for social and professional purposes",
       "Understand demanding longer texts and implicit meaning",
     ],
-    focus: ["Nuance", "Academic style", "Partizipial", "Idioms"],
+    focus: ["nuance", "academic-style", "participial", "idioms"],
     grammar: [
       "Advanced connectors: obwohl, während, indem, wodurch",
       "Nominal style for academic writing",
@@ -248,7 +250,7 @@ const LEARN_LEVELS = [
       "Reformulate and summarize across sources",
       "Use idiomatic and literary language appropriately",
     ],
-    focus: ["Style & register", "Rhetoric", "Irony & tone", "Precision"],
+    focus: ["style-register", "rhetoric", "irony-tone", "precision"],
     grammar: [
       "Stylistic variation: spoken vs written vs literary",
       "Complex embedding and elegant subordination",

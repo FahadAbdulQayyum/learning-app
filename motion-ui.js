@@ -114,7 +114,7 @@
   function bindPressable(root = document) {
     if (reduced || !press) return;
     const selector =
-      ".word-chip, .vocab-chip, .nav-btn, .play-sentence, .favourite-btn, .story-card, .voice-fab, .grammar-filter, .favourites-toggle, .verb-tense-row, .verb-infinitive, .personal-pair, .personal-table-cell, .learn-level-card";
+      ".word-chip, .vocab-chip, .nav-btn, .play-sentence, .favourite-btn, .story-card, .voice-fab, .grammar-filter, .favourites-toggle, .verb-tense-row, .verb-infinitive, .personal-pair, .personal-table-cell, .learn-level-card, .learn-focus-chip";
     root.querySelectorAll(selector).forEach((el) => {
       if (el.dataset.motionBound) return;
       el.dataset.motionBound = "1";
