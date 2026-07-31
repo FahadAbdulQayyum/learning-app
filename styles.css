@@ -14,6 +14,10 @@
   --chip-hover: rgba(255, 255, 255, 0.7);
   --gate-veil: rgba(237, 243, 246, 0.92);
   --install-btn-bg: #fff;
+  --premium: #c4a035;
+  --premium-deep: #8a6b18;
+  --premium-soft: rgba(196, 160, 53, 0.18);
+  --premium-ink: #3d2f0a;
   --radius: 18px;
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Source Sans 3", "Segoe UI", sans-serif;
@@ -39,6 +43,10 @@ html[data-theme="dark"] {
   --chip-hover: rgba(255, 255, 255, 0.06);
   --gate-veil: rgba(12, 20, 24, 0.94);
   --install-btn-bg: #e8f4f5;
+  --premium: #e0c56a;
+  --premium-deep: #c4a035;
+  --premium-soft: rgba(224, 197, 106, 0.2);
+  --premium-ink: #1a1508;
   --atmosphere-1: rgba(77, 179, 191, 0.14);
   --atmosphere-2: rgba(30, 90, 100, 0.22);
   --atmosphere-base: linear-gradient(165deg, #0c1519 0%, #0f1a1e 45%, #122226 100%);
@@ -645,6 +653,43 @@ html.js-motion .brand-letter:hover {
   background: var(--leaf);
   border-color: var(--leaf);
   color: #fff;
+}
+
+.nav-btn--premium {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-color: color-mix(in srgb, var(--premium) 55%, var(--line));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--premium) 28%, var(--surface)) 0%,
+    color-mix(in srgb, var(--premium-deep) 18%, var(--surface)) 100%
+  );
+  color: var(--premium-deep);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.nav-btn--premium:hover {
+  border-color: var(--premium);
+  color: var(--premium-ink);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--premium) 42%, var(--surface)) 0%,
+    color-mix(in srgb, var(--premium-deep) 28%, var(--surface)) 100%
+  );
+}
+
+.nav-btn--premium.is-active {
+  background: linear-gradient(135deg, var(--premium) 0%, var(--premium-deep) 100%);
+  border-color: var(--premium-deep);
+  color: #fff;
+  box-shadow: 0 8px 20px var(--premium-soft);
+}
+
+.nav-premium-gem {
+  font-size: 0.7rem;
+  line-height: 1;
+  opacity: 0.9;
 }
 
 .theme-toggle {
@@ -1968,4 +2013,190 @@ html[data-theme="dark"] .tense-pill--future {
 .personal-table-cell:disabled {
   cursor: default;
   opacity: 0.55;
+}
+
+.learn-list,
+.learn-reader {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+}
+
+.learn-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--premium-deep);
+}
+
+.learn-intro h2 {
+  margin: 0 0 0.4rem;
+}
+
+.learn-band {
+  margin-top: 1.5rem;
+}
+
+.learn-band-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.learn-level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.85rem;
+}
+
+.learn-level-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 1.05rem 1.1rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--premium) 35%, var(--line));
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--premium) 16%, var(--surface)) 0%,
+      var(--surface) 55%
+    );
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.learn-level-card:hover,
+.learn-level-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--premium);
+  box-shadow: 0 12px 28px var(--premium-soft);
+}
+
+.learn-level-code {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--premium-deep);
+}
+
+.learn-level-card--a1 .learn-level-code,
+.learn-level-badge--a1 { color: #2f9a5b; }
+.learn-level-card--a2 .learn-level-code,
+.learn-level-badge--a2 { color: #3d8b66; }
+.learn-level-card--b1 .learn-level-code,
+.learn-level-badge--b1 { color: #c47a2c; }
+.learn-level-card--b2 .learn-level-code,
+.learn-level-badge--b2 { color: #b86a1c; }
+.learn-level-card--c1 .learn-level-code,
+.learn-level-badge--c1 { color: #2f6fed; }
+.learn-level-card--c2 .learn-level-code,
+.learn-level-badge--c2 { color: #8a6b18; }
+
+.learn-level-title {
+  margin-top: 0.35rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.learn-level-title-de {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.learn-level-tagline {
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.learn-level-meta {
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.learn-level-badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 0.45rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: var(--premium-soft);
+  border: 1px solid color-mix(in srgb, var(--premium) 40%, transparent);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.learn-level-title-de-lg {
+  margin: 0.15rem 0 0.55rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.learn-play-all {
+  border-color: color-mix(in srgb, var(--premium) 45%, var(--line));
+  color: var(--premium-deep);
+}
+
+.learn-play-all:hover,
+.learn-play-all:focus-visible {
+  border-color: var(--premium);
+  background: var(--premium-soft);
+}
+
+.learn-panel {
+  margin-top: 0.85rem;
+}
+
+.learn-bullet-list {
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--ink-soft);
+}
+
+.learn-bullet-list li {
+  margin: 0.3rem 0;
+}
+
+.learn-focus-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+}
+
+.learn-focus-chip {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--premium) 35%, var(--line));
+  background: color-mix(in srgb, var(--premium) 10%, var(--surface));
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--premium-deep);
+}
+
+html[data-theme="dark"] .learn-level-card--c2 .learn-level-code,
+html[data-theme="dark"] .learn-level-badge--c2 {
+  color: var(--premium);
+}
+
+html[data-theme="dark"] .nav-btn--premium {
+  color: var(--premium);
+}
+
+html[data-theme="dark"] .nav-btn--premium.is-active {
+  color: #1a1508;
 }

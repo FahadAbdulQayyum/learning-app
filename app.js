@@ -823,6 +823,7 @@
   initVocabulary();
   initGrammar();
   initPersonal();
+  initLearn();
   initViewNav();
 
   if ("serviceWorker" in navigator) {
@@ -837,6 +838,7 @@
 
   function initViewNav() {
     const views = {
+      learn: document.getElementById("view-learn"),
       practice: document.getElementById("view-practice"),
       stories: document.getElementById("view-stories"),
       vocabulary: document.getElementById("view-vocabulary"),
@@ -867,11 +869,196 @@
           if (activeView) motion()?.popIn(activeView);
         });
 
+        if (view === "learn") showLearnList();
         if (view === "stories") showStoriesList();
         if (view === "vocabulary") showVocabList();
         if (view === "grammar") showGrammarList();
         if (view === "personal") showPersonalList();
       });
+    });
+  }
+
+  function initLearn() {
+    const listEl = document.getElementById("learn-list");
+    if (!listEl || typeof LEARN_LEVELS === "undefined") return;
+    renderLearnList();
+  }
+
+  function showLearnList() {
+    const listEl = document.getElementById("learn-list");
+    const readerEl = document.getElementById("learn-reader");
+    if (!listEl || !readerEl) return;
+    listEl.hidden = false;
+    readerEl.hidden = true;
+    readerEl.replaceChildren();
+  }
+
+  function renderLearnList() {
+    const listEl = document.getElementById("learn-list");
+    listEl.replaceChildren();
+
+    const intro = document.createElement("div");
+    intro.className = "stories-intro learn-intro";
+    intro.innerHTML = `
+      <p class="learn-kicker">Smart path · CEFR</p>
+      <h2>Learn by level</h2>
+      <p>Pick your academic level from A1 to C2. Each path has goals, grammar focus, and speakable phrases.</p>
+    `;
+    listEl.append(intro);
+
+    const bands = [
+      { id: "basic", label: "Basic user" },
+      { id: "independent", label: "Independent user" },
+      { id: "proficient", label: "Proficient user" },
+    ];
+
+    bands.forEach((band) => {
+      const levels = LEARN_LEVELS.filter((level) => level.band === band.id);
+      if (!levels.length) return;
+
+      const group = document.createElement("section");
+      group.className = "learn-band";
+      group.setAttribute("aria-label", band.label);
+
+      const bandTitle = document.createElement("h3");
+      bandTitle.className = "learn-band-title";
+      bandTitle.textContent = band.label;
+      group.append(bandTitle);
+
+      const grid = document.createElement("div");
+      grid.className = "learn-level-grid";
+
+      levels.forEach((level) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `learn-level-card learn-level-card--${level.code.toLowerCase()}`;
+        card.innerHTML = `
+          <span class="learn-level-code">${level.code}</span>
+          <span class="learn-level-title">${level.title}</span>
+          <span class="learn-level-title-de">${level.titleDe}</span>
+          <span class="learn-level-tagline">${level.tagline}</span>
+          <span class="learn-level-meta">${level.phrases.length} phrases · ${level.focus.length} focus areas</span>
+        `;
+        card.addEventListener("click", () => openLearnLevel(level.id));
+        grid.append(card);
+      });
+
+      group.append(grid);
+      listEl.append(group);
+    });
+
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterElements([intro], { y: 12 });
+      m.enterList(listEl, ".learn-level-card");
+      m.refresh(listEl);
+    });
+  }
+
+  /** @param {string} levelId */
+  function openLearnLevel(levelId) {
+    const level = LEARN_LEVELS.find((item) => item.id === levelId);
+    if (!level) return;
+
+    const listEl = document.getElementById("learn-list");
+    const readerEl = document.getElementById("learn-reader");
+    listEl.hidden = true;
+    readerEl.hidden = false;
+    readerEl.replaceChildren();
+
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "story-back";
+    backBtn.textContent = "← All levels";
+    backBtn.addEventListener("click", showLearnList);
+
+    const header = document.createElement("header");
+    header.className = "story-header learn-header";
+    header.innerHTML = `
+      <p class="learn-level-badge learn-level-badge--${level.code.toLowerCase()}">${level.code}</p>
+      <h2 class="story-title-en vocab-title-en">${level.title}</h2>
+      <p class="learn-level-title-de-lg">${level.titleDe}</p>
+      <p class="vocab-section-desc">${level.description}</p>
+    `;
+
+    const playAllBtn = document.createElement("button");
+    playAllBtn.type = "button";
+    playAllBtn.className = "play-sentence story-play-all learn-play-all";
+    playAllBtn.innerHTML = `${playIcon}<span>Play all phrases</span>`;
+    playAllBtn.addEventListener("click", () => {
+      const text = level.phrases.map((p) => p.de).join(". ");
+      speak(text, null, playAllBtn, { soft: true });
+    });
+
+    readerEl.append(backBtn, header, playAllBtn);
+
+    const canDo = document.createElement("section");
+    canDo.className = "learn-panel";
+    canDo.innerHTML = `<h3 class="personal-subheading">You can</h3>`;
+    const canList = document.createElement("ul");
+    canList.className = "learn-bullet-list";
+    level.canDo.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      canList.append(li);
+    });
+    canDo.append(canList);
+    readerEl.append(canDo);
+
+    const focus = document.createElement("section");
+    focus.className = "learn-panel";
+    focus.innerHTML = `<h3 class="personal-subheading">Focus</h3>`;
+    const chips = document.createElement("div");
+    chips.className = "learn-focus-chips";
+    level.focus.forEach((item) => {
+      const chip = document.createElement("span");
+      chip.className = "learn-focus-chip";
+      chip.textContent = item;
+      chips.append(chip);
+    });
+    focus.append(chips);
+    readerEl.append(focus);
+
+    const grammar = document.createElement("section");
+    grammar.className = "learn-panel";
+    grammar.innerHTML = `<h3 class="personal-subheading">Grammar targets</h3>`;
+    const gList = document.createElement("ul");
+    gList.className = "learn-bullet-list";
+    level.grammar.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      gList.append(li);
+    });
+    grammar.append(gList);
+    readerEl.append(grammar);
+
+    (level.tips || []).forEach((tip) => {
+      const tipEl = document.createElement("p");
+      tipEl.className = "grammar-tip personal-tip";
+      tipEl.innerHTML = `<strong>Tip:</strong> ${tip}`;
+      readerEl.append(tipEl);
+    });
+
+    const phrasesHeading = document.createElement("h3");
+    phrasesHeading.className = "personal-subheading";
+    phrasesHeading.textContent = "Key phrases";
+    readerEl.append(phrasesHeading);
+
+    const phraseList = document.createElement("div");
+    phraseList.className = "personal-pair-list";
+    level.phrases.forEach((phrase) => {
+      phraseList.append(renderPersonalPair(phrase, true));
+    });
+    readerEl.append(phraseList);
+
+    readerEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    afterPaint(() => {
+      const m = motion();
+      if (!m) return;
+      m.enterElements([header, playAllBtn], { staggerEach: 0.05, y: 12 });
+      m.enterList(phraseList, ".personal-pair");
+      m.refresh(readerEl);
     });
   }
 
